@@ -23,7 +23,13 @@ void HandleSerial(){
         case 'L':
           motorSpeed = 30;
           Serial.println("MotorSpeed:Low");
-          break;   
+          break; 
+
+        case 'A': doGrab(0); break;
+
+        case 'B': doGrab(1); break;
+        
+        case 'C': doGrab(2); break;
 
         default:
           break;  
