@@ -40,35 +40,37 @@ void doGrab(int index){
 
   // 1. 底座转到抓取点，同时抬高大臂，爪子张开
   setAngles(grabBase, grabSh - liftAngle, grabEl, gripperOpenAngle);
-  delay(800);
+  waitMs(800);
 
   // 2. 下降到抓取高度
   setAngles(grabBase, grabSh, grabEl, gripperOpenAngle);
-  delay(800);
+  waitMs(800);
 
-  // 3. 夹紧（【关键修改】使用该物体专属角度，而不是硬编码的10！）
+  // 3. 使用该物体专属角度夹住物体
   setAngles(grabBase, grabSh, grabEl, closeAngle);
-  delay(500);
+  waitMs(500);
 
   // 4. 抬升
   setAngles(grabBase, grabSh - liftAngle, grabEl, closeAngle);
-  delay(800);
+  waitMs(800);
 
   // 5. 底座转到放置点
   setAngles(placeBase, grabSh - liftAngle, grabEl, closeAngle);
-  delay(800);
+  waitMs(800);
 
   // 6. 下降到放置高度
   setAngles(placeBase, placeSh, placeEl, closeAngle);
-  delay(800);
+  waitMs(800);
 
-  // 7. 松开（【统一修改】使用统一的开爪角度）
+  // 7. 松开
   setAngles(placeBase, placeSh, placeEl, gripperOpenAngle);
-  delay(500);
+  waitMs(500);
 
   // 8. 抬升并回中
   setAngles(homePose[0], homePose[1], homePose[2], gripperOpenAngle);
-  delay(800);
+  waitMs(800);
 
   isAutoRunning = false;
+  clearSerial();   // 动作过程中按下的按键全部丢掉
+  Serial.println("Grab done.");  
 }

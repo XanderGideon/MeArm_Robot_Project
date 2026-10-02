@@ -74,10 +74,7 @@ bool isRecording = false;  //标志位
 unsigned long lastRecordTime = 0;  //用于非阻塞计时
 const int recordInterval = 60;  //每60ms记一次时，共0.25*60 = 15s > 10s  
 
-// ================= 统一写舵机：写的同时记住角度 =================
-/* 【修复核心】以前是“每一轮 loop 都拿摇杆的绝对位置直接覆盖舵机角度”，
-   所以：1)摇杆一松手(回中)舵机立刻回到 90°；2)串口刚下发的角度马上被覆盖掉。
-   现在改成：摇杆只在被推动时小步改变角度，松手后保持不动。 */
+// 一个改变舵机角度的入口，将原本散乱的write函数全部集合于此，改变时只需调用函数
 void setAngles(int b, int s, int e, int g) {
   baseAngle = constrain(b, baseMin, baseMax);
   shAngle   = constrain(s, shMin,   shMax);
@@ -120,32 +117,6 @@ void updateJoysticks() {
   if (moved) setAngles(b, s, e, g);
 }
 
-// ================= 自检：逐个舵机扫一遍，定位硬件问题 =================
-/* 串口发 T 触发。请仔细听/看，日志里每一个舵机扫完都会停顿 1 秒。
-   - 某个舵机完全不动 / 嘀嘀响 / 抖动 => 供电不足或接线/舵机坏
-   - 两三个一起动或一起卡 => 电源带不动（USB 5V 供电是常见原因） */
-void servoTest() {
-  Serial.println(F("=== SELF TEST START ==="));
-  Serial.println(F(">> BASE pin9"));
-  for (int a = 0; a <= 180; a += 30) { base.write(a);     delay(300); Serial.print(F("base="));     Serial.println(a); }
-  delay(1000);
-
-  Serial.println(F(">> SHOULDER pin7"));
-  for (int a = 15; a <= 165; a += 30) { shoulder.write(a); delay(300); Serial.print(F("shoulder=")); Serial.println(a); }
-  delay(1000);
-
-  Serial.println(F(">> ELBOW pin8"));
-  for (int a = 0; a <= 180; a += 30) { elbow.write(a);    delay(300); Serial.print(F("elbow="));    Serial.println(a); }
-  delay(1000);
-
-  Serial.println(F(">> GRIPPER pin6"));
-  for (int a = 20; a <= 90; a += 15) { gripper.write(a);  delay(300); Serial.print(F("gripper="));  Serial.println(a); }
-  delay(1000);
-
-  setAngles(90, 90, 90, 90);
-  Serial.println(F("=== SELF TEST END, back to 90/90/90/90 ==="));
-}
-
 void setup() {
   //开启串口
   Serial.begin(9600);
@@ -167,7 +138,7 @@ void setup() {
 void loop() {
   HandleSerial();   //接收串口cmd
 
-  if(isRecording){
+  if(isRecording){//录制开始
     if(millis() - lastRecordTime >= recordInterval){//非阻塞式定时
       lastRecordTime = millis();
       if(recordCount < MAX_RECORDS){
@@ -177,15 +148,21 @@ void loop() {
         recordData[recordCount][3] = gripper.read();
         recordCount++;        
       }
+      if(recordCount >= MAX_RECORDS){// 录满了自动停，并且提示一下
+        isRecording = false;
+        Serial.println("Record buffer full , Stop Recording");
+      }
     }
   }
 
   // 只有在没有自动任务时，摇杆才控制舵机
+  //录制时必须用摇杆,故而不判断isRecording
   if(!isAutoRunning) updateJoysticks();
 
   delay(motorSpeed); // 小延时，保证摇杆响应流畅
 }
 
+// ================= 串口接收中断（每轮 loop 之间自动调用）=================
 void serialEvent() {
   while (Serial.available() > 0) {
     char ch = (char)Serial.read();
