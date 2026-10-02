@@ -24,19 +24,44 @@ void HandleSerial(){
     char cmd = inputString[0]; //从字符串里取第一个字符
     
     switch(cmd){
-      case 'O': setAngles(baseAngle, shAngle, elAngle, grMin); Serial.println("Gripper:Open"); break;
-      case 'S': setAngles(baseAngle, shAngle, elAngle, grMax); Serial.println("Gripper:Close"); break;
+      // ------------- 任务一：固定指令 ------------
+      case 'O': if (isAutoRunning) { Serial.println("Busy!"); break; } setAngles(baseAngle, shAngle, elAngle, grMin); Serial.println("Gripper:Open"); break;
+      case 'S': if (isAutoRunning) { Serial.println("Busy!"); break; } setAngles(baseAngle, shAngle, elAngle, grMax); Serial.println("Gripper:Close"); break;
       case 'H': motorSpeed = 10; Serial.println("MotorSpeed:High"); break;
       case 'L': motorSpeed = 30; Serial.println("MotorSpeed:Low"); break;
+
+      // ---------- 任务二：上位机发 A / B / C ----------
       case 'A': doGrab(0); break;
       case 'B': doGrab(1); break;
       case 'C': doGrab(2); break;
+
+    // ---------- 任务三：遥控板四个按键 ----------
+      case '1':
+        if(isAutoRunning) Serial.println("Busy!"); break;
+
+        Serial.print("Key1 -> object:");
+        Serial.println(currentgrab);//0=A, 1=B, 2=C
+        doGrab(currentgrab);
+        currentgrab++;
+        if(currentgrab > 2) currentgrab = 0;
+        break;
+
+      case '2':
+        break;
+
+      case '3':
+        break;
+
+      case '4':
+        break;
+
+      // -------------自检-------------
       case 'T': servoTest(); Serial.println("SelfTest:Done"); break;
       default: Serial.println("Error!"); break;
     }
   }
   else if(inputString.startsWith("x") || inputString.startsWith("X")){
-    parseXYZ(inputString);
+    SerialCommandXYZ(inputString);
   }
   else{
     Serial.println("Error!"); // 只有真正乱码的指令才会走到这里
@@ -47,7 +72,7 @@ void HandleSerial(){
 }
 
 //实现一条指令控制三个舵机
-void parseXYZ(String str){
+void SerialCommandXYZ(String str){
   // 目标格式: x90,y90,z90 (假设没有空格)
 
   //找逗号并返回索引（字符数组/字符串）

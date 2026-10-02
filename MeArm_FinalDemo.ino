@@ -163,7 +163,7 @@ void loop() {
 }
 
 // ================= 串口接收中断（每轮 loop 之间自动调用）=================
-void serialEvent() {
+void serialReceive() {
   while (Serial.available() > 0) {
     char ch = (char)Serial.read();
     inputString += ch;
