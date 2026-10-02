@@ -1,7 +1,7 @@
 void HandleSerial(){
   if(inputComplete){
     inputString.trim(); // 去掉回车换行
-    
+
     // 【修复1】如果去掉换行后是空字符串（只按了回车），直接跳过，不报错
     if (inputString.length() == 0) {
       inputComplete = false;
@@ -10,18 +10,20 @@ void HandleSerial(){
 
     if(inputString.length() == 1){
       // 【修复2】关键！不要再从 Serial.read() 读了，直接从字符串里取第一个字符
-      char cmd = inputString[0]; 
+      char cmd = inputString[0];
 
       switch(cmd){
-        case 'O': gripper.write(0); Serial.println("Gripper:Open"); break;
-        case 'S': gripper.write(90); Serial.println("Gripper:Close"); break;       
-        case 'H': motorSpeed = 10; Serial.println("MotorSpeed:High"); break;  
-        case 'L': motorSpeed = 30; Serial.println("MotorSpeed:Low"); break; 
+        // 【修复4】夹爪角度改 grAngle 并走 setAngles 的限幅，不再是写死的 0/90
+        case 'O': setAngles(baseAngle, shAngle, elAngle, grMin); Serial.println("Gripper:Open"); break;
+        case 'S': setAngles(baseAngle, shAngle, elAngle, grMax); Serial.println("Gripper:Close"); break;
+        case 'H': motorSpeed = 10; Serial.println("MotorSpeed:High"); break;
+        case 'L': motorSpeed = 30; Serial.println("MotorSpeed:Low"); break;
         case 'A': doGrab(0); break;
         case 'B': doGrab(1); break;
         case 'C': doGrab(2); break;
-        default: break;  
-      }              
+        case 'T': servoTest(); Serial.println("SelfTest:Done"); break;
+        default: Serial.println("Error!"); break;
+      }
     }
     else if(inputString.startsWith("x") || inputString.startsWith("X")){
       parseXYZ(inputString);
@@ -30,7 +32,7 @@ void HandleSerial(){
       Serial.println("Error!"); // 只有真正乱码的指令才会走到这里
     }
     inputString = "";
-    inputComplete = false; 
+    inputComplete = false;
   }
 }
 
@@ -40,36 +42,28 @@ void parseXYZ(String str){
 
   //找逗号并返回索引（字符数组/字符串）
   int firstComma = str.indexOf(',');
-  int secondComma = str.indexOf(',',firstComma+1);
+  int secondComma = str.indexOf(',', firstComma + 1);
 
   // 如果两个逗号都存在，说明格式基本正确
   if(firstComma > 0 && secondComma > 0){
     // 提取 x10, y30, z20 中的数字（substring函数范围是左开右闭）
     //toInt把字符串转成整数
-    int xValue = str.substring(1,firstComma).toInt();
-    int yValue = str.substring(firstComma + 2, secondComma).toInt();
-    int zValue = str.substring(secondComma + 2).toInt();
+    int xValue = str.substring(1, firstComma).toInt();
+    int yValue = str.substring(firstComma + 1, secondComma).toInt(); // 【修复3】多跳了一个字符
+    int zValue = str.substring(secondComma + 1).toInt();             // 【修复3】同上
 
-    //限制安全范围
-    int xVal = constrain(xValue, baseMin, baseMax);
-    int yVal = constrain(yValue, shMin, shMax);
-    int zVal = constrain(zValue, elMin, elMax);
-
-    base.write(xVal);
-    shoulder.write(yVal);
-    elbow.write(zVal);
+    // 【修复核心】写舵机的同时更新 baseAngle/shAngle/elAngle，
+    // 否则摇杆那一轮会把刚下发的角度覆盖掉，看起来就是“串口指令没反应”
+    setAngles(xValue, yValue, zValue, grAngle);
 
     Serial.print("Executed -> x:");
-    Serial.print(xVal);
+    Serial.print(baseAngle);
     Serial.print(" y:");
-    Serial.print(yVal);
+    Serial.print(shAngle);
     Serial.print(" z:");
-    Serial.println(zVal);    
+    Serial.println(elAngle);
   }
   else{
     Serial.println("Error!");
   }
 }
-
-
-
