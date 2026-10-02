@@ -37,7 +37,7 @@ void HandleSerial(){
 
     // ---------- 任务三：遥控板四个按键 ----------
       case '1':
-        if(isAutoRunning) Serial.println("Busy!"); break;
+        if(isAutoRunning || isRecording) Serial.println("Busy!"); break;
 
         Serial.print("Key1 -> object:");
         Serial.println(currentgrab);//0=A, 1=B, 2=C

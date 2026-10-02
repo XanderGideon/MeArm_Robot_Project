@@ -21,7 +21,7 @@ int liftAngle = 25;//大臂抬升高度，设置时大臂角度减去这个值
 
 // 目的：让 doGrab 也走 setAngles，自动任务结束后角度变量是同步的
 void doGrab(int index){
-  if (isAutoRunning) {
+  if (isAutoRunning || isRecording) {
     Serial.println("Busy!");
     return;
   }
