@@ -1,29 +1,34 @@
-/*每个物体只记录两个位置：抓取点，放置点
-格式为{抓取base，抓取shoulder，抓取elbow，
-放置base，放置shoulder，放置elbow}*/
-
-//----以下代码为测试版本------
-//位置与角度均为测试用
+// ===== ★ 位置表（任务二用，按键 4 回中也用这张表）=====
+/* 每个物体只记两个姿态：抓取姿态 + 放置姿态
+   一行 6 个数：{ 抓取base, 抓取shoulder, 抓取elbow,
+                  放置base, 放置shoulder, 放置elbow }
+   下面这些是测试值，上机以后按实际物体/桌面位置改这一张表就行 */
 
 int objectPos[3][6] = {
-  {45, 130, 80,   135, 130, 80},  // 物体A：抓取点(45,130,80)，放置点(135,130,80)
-  {90, 130, 80,   160, 130, 80},  // 物体B：抓取点(90,130,80)，放置点(160,130,80)
-  {135, 130, 80,  45, 130, 80},   // 物体C：抓取点(135,130,80)，放置点(45,130,80)
+  { 30, 130, 80,   135, 125, 80},   // 物体 A：抓取点 base=30，放置点 base=135
+  { 75, 130, 80,   155, 125, 80},   // 物体 B：抓取点 base=75，放置点 base=155
+  {120, 130, 80,   170, 125, 80},   // 物体 C：抓取点 base=120，放置点 base=170
 };
-int homePose[3] = {90, 90, 90}; // 根据实测修改
-//三个物体不同夹爪夹紧角度
-int gripperCloseAngle[3] = {85, 70, 75};
 
-int gripperOpenAngle = 10;//夹爪张角
-int liftAngle = 25;//大臂抬升高度
+//回中姿态
+int homePose[3] = {90, 90, 90}; // 底座、大臂、小臂
+int homeGripperAngle = 20; //回中时爪子张开，方便衔接
+
+int gripperCloseAngle[3] = {85, 70, 75};//三个物体不同夹爪夹紧角度
+
+int gripperOpenAngle = 20;//夹爪张角,需要在范围之内
+int liftAngle = 25;//大臂抬升高度，设置时大臂角度减去这个值
 
 // 目的：让 doGrab 也走 setAngles，自动任务结束后角度变量是同步的
 void doGrab(int index){
-  if(isAutoRunning) return;
-  isAutoRunning = true;
+  if (isAutoRunning) {
+    Serial.println("Busy!");
+    return;
+  }
+  isAutoRunning = true;   // 动作期间摇杆不生效 
 
-  Serial.print("Starting grab sequence for index: ");
-  Serial.println(index);
+  Serial.print("Grab object ");
+  Serial.println(index);  // 0=A 1=B 2=C
 
   int grabBase  = objectPos[index][0];
   int grabSh    = objectPos[index][1];

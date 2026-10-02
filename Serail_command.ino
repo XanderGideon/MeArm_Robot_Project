@@ -1,15 +1,26 @@
+//// ===== 把串口里堆积的旧指令丢掉 =====
+// 一个抓取动作要好几秒，动作过程中按下的按键会堆在串口缓冲区里，
+// 动作一结束就被当成新指令执行（看起来就是“莫名其妙又动一下”），所以动作结束后清一次
+void clearSerial(){
+  while(Serial.available() > 0){
+    Serial.read();
+  }
+  inputString = "";
+  inputComplete = false;
+}
+
 void HandleSerial(){
   if(inputComplete){
     inputString.trim(); // 去掉回车换行
 
-    // 【修复1】如果去掉换行后是空字符串（只按了回车），直接跳过，不报错
+    //如果去掉换行后是空字符串（只按了回车），直接跳过，不报错
     if (inputString.length() == 0) {
       inputComplete = false;
       return;
     }
 
     if(inputString.length() == 1){
-      // 【修复2】关键！不要再从 Serial.read() 读了，直接从字符串里取第一个字符
+      //从字符串里取第一个字符
       char cmd = inputString[0];
 
       switch(cmd){
