@@ -1,6 +1,5 @@
 //// ===== 把串口里堆积的旧指令丢掉 =====
 // 一个抓取动作要好几秒，动作过程中按下的按键会堆在串口缓冲区里，
-// 动作一结束就被当成新指令执行（看起来就是“莫名其妙又动一下”），所以动作结束后清一次
 void clearSerial(){
   while(Serial.available() > 0){
     Serial.read();
@@ -9,7 +8,7 @@ void clearSerial(){
   inputComplete = false;
 }
 
-// ================= 串口指令分发 =================/
+// ================= 串口指令分发 =================
 void HandleSerial(){
   if(!inputComplete) return;
 
@@ -25,10 +24,10 @@ void HandleSerial(){
     
     switch(cmd){
       // ------------- 任务一：固定指令 ------------
-      case 'O': if (isAutoRunning) { Serial.println("Busy!"); break; } setAngles(baseAngle, shAngle, elAngle, grMin); Serial.println("Gripper:Open"); break;
-      case 'S': if (isAutoRunning) { Serial.println("Busy!"); break; } setAngles(baseAngle, shAngle, elAngle, grMax); Serial.println("Gripper:Close"); break;
-      case 'H': motorSpeed = 10; Serial.println("MotorSpeed:High"); break;
-      case 'L': motorSpeed = 30; Serial.println("MotorSpeed:Low"); break;
+      case 'O': if (isAutoRunning) { Serial.println(F("Busy!")); break; } setAngles(baseAngle, shAngle, elAngle, grMin); Serial.println("Gripper:Open"); break;
+      case 'S': if (isAutoRunning) { Serial.println(F("Busy!")); break; } setAngles(baseAngle, shAngle, elAngle, grMax); Serial.println("Gripper:Close"); break;
+      case 'H': motorSpeed = 10; Serial.println(F("MotorSpeed:High")); break;
+      case 'L': motorSpeed = 30; Serial.println(F("MotorSpeed:Low")); break;
 
       // ---------- 任务二：上位机发 A / B / C ----------
       case 'A': doGrab(0); break;
@@ -37,9 +36,12 @@ void HandleSerial(){
 
     // ---------- 任务三：遥控板四个按键 ----------
       case '1':
-        if(isAutoRunning || isRecording) Serial.println("Busy!"); break;
+        if(isAutoRunning || isRecording) {
+          Serial.println(F("Busy!"));
+          break;
+         }
 
-        Serial.print("Key1 -> object:");
+        Serial.print(F("Key1 -> object:"));
         Serial.println(currentgrab);//0=A, 1=B, 2=C
         doGrab(currentgrab);
         currentgrab++;
@@ -47,29 +49,35 @@ void HandleSerial(){
         break;
 
       case '2':
-        if(isAutoRunning) Serial.println("Busy!"); break;
+        if(isAutoRunning){
+          Serial.println(F("Busy!"));
+          break;
+        }
         //第一次按下
-        Serial.println("Record Start");
+        Serial.println(F("Record Start"));
         isRecording = true;
         recordCount = 0;
         lastRecordTime = millis();
         //第二次按下
         if(isRecording == true){
           isRecording = false;
-          Serial.println("Record Stop");
+          Serial.println(F("Record Stop"));
         }
         break;
 
       case '3':
-        if(isAutoRunning || isRecording) Serial.println("Busy!"); break;
+        if(isAutoRunning || isRecording){
+          Serial.println(F("Busy!"));
+          break;
+        }
 
         isAutoRunning = true;
-        Serial.println("Play Start");
+        Serial.println(F("Play Start"));
         for(int i = 0 ; i < recordCount ; i++){
           setAngles(recordData[i][0],recordData[i][1],
           recordData[i][2],recordData[i][3]);
         }
-        Serial.println("play Stop");
+        Serial.println(F("play Stop"));
         break;
 
       case '4':
@@ -77,9 +85,9 @@ void HandleSerial(){
         break;
 
       // -------------自检-------------
-      case 'T': servoTest(); Serial.println("SelfTest:Done"); break;
+      case 'T': servoTest(); Serial.println(F("SelfTest:Done")); break;
       
-      default: Serial.println("Error!"); break;
+      default: Serial.println(F("Error!")); break;
     }
   }
   else if(inputString.startsWith("x") || inputString.startsWith("X")){
@@ -113,14 +121,14 @@ void SerialCommandXYZ(String str){
     // 否则摇杆那一轮会把刚下发的角度覆盖掉，看起来就是“串口指令没反应”
     setAngles(xValue, yValue, zValue, grAngle);
 
-    Serial.print("Executed -> x:");
+    Serial.print(F("Executed -> x:"));
     Serial.print(baseAngle);
-    Serial.print(" y:");
+    Serial.print(F(" y:"));
     Serial.print(shAngle);
-    Serial.print(" z:");
+    Serial.print(F(" z:"));
     Serial.println(elAngle);
   }
   else{
-    Serial.println("Error!");
+    Serial.println(F("Error!"));
   }
 }

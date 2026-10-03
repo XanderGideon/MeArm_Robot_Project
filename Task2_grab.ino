@@ -1,9 +1,7 @@
-// ===== ★ 位置表（任务二用，按键 4 回中也用这张表）=====
 /* 每个物体只记两个姿态：抓取姿态 + 放置姿态
    一行 6 个数：{ 抓取base, 抓取shoulder, 抓取elbow,
                   放置base, 放置shoulder, 放置elbow }
-   下面这些是测试值，上机以后按实际物体/桌面位置改这一张表就行 */
-
+ */
 int objectPos[3][6] = {
   { 30, 130, 80,   135, 125, 80},   // 物体 A：抓取点 base=30，放置点 base=135
   { 75, 130, 80,   155, 125, 80},   // 物体 B：抓取点 base=75，放置点 base=155
@@ -19,12 +17,12 @@ int liftAngle = 25;//大臂抬升高度，设置时大臂角度减去这个值
 // 目的：让 doGrab 也走 setAngles，自动任务结束后角度变量是同步的
 void doGrab(int index){
   if (isAutoRunning || isRecording) {
-    Serial.println("Busy!");
+    Serial.println(F("Busy!"));
     return;
   }
   isAutoRunning = true;   // 动作期间摇杆不生效 
 
-  Serial.print("Grab object ");
+  Serial.print(F("Grab object "));
   Serial.println(index);  // 0=A 1=B 2=C
 
   int grabBase  = objectPos[index][0];
@@ -69,5 +67,5 @@ void doGrab(int index){
 
   isAutoRunning = false;
   clearSerial();   // 动作过程中按下的按键全部丢掉
-  Serial.println("Grab done.");  
+  Serial.println(F("Grab done."));  
 }
