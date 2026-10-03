@@ -36,10 +36,7 @@ void HandleSerial(){
 
     // ---------- 任务三：遥控板四个按键 ----------
       case '1':
-        if(isAutoRunning || isRecording) {
-          Serial.println(F("Busy!"));
-          break;
-         }
+        if(isAutoRunning || isRecording) {Serial.println(F("Busy!"));break;}
 
         Serial.print(F("Key1 -> object:"));
         Serial.println(currentgrab);//0=A, 1=B, 2=C
@@ -49,27 +46,31 @@ void HandleSerial(){
         break;
 
       case '2':
-        if(isAutoRunning){
-          Serial.println(F("Busy!"));
-          break;
+        if(isAutoRunning){Serial.println(F("Busy!"));break;}
+        //开始录制
+        if(isRecording == false){
+          isRecording = true;
+          recordCount = 0;
+          lastRecordTime = millis();
+          Serial.println(F("Record Start"));
         }
-        //第一次按下
-        Serial.println(F("Record Start"));
-        isRecording = true;
-        recordCount = 0;
-        lastRecordTime = millis();
-        //第二次按下
-        if(isRecording == true){
+        //结束录制
+        else {
           isRecording = false;
-          Serial.println(F("Record Stop"));
+          Serial.print("Record:STOP  points=");
+          Serial.print(recordCount);
+          Serial.print("  time=");
+          Serial.print((long)recordCount * recordInterval / 1000);
+          Serial.println(" s");
+          // 考核要求录制时长必须大于 10 秒，不够就当场提醒，别等演示完才发现
+          if ((long)recordCount * recordInterval < 10000) {
+            Serial.println("WARNING: time <= 10s, need >10s !");
+          }
         }
         break;
 
       case '3':
-        if(isAutoRunning || isRecording){
-          Serial.println(F("Busy!"));
-          break;
-        }
+        if(isAutoRunning || isRecording){Serial.println(F("Busy!"));break;}
 
         isAutoRunning = true;
         Serial.println(F("Play Start"));
