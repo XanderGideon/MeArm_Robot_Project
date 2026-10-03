@@ -10,9 +10,6 @@ int objectPos[3][6] = {
   {120, 130, 80,   170, 125, 80},   // 物体 C：抓取点 base=120，放置点 base=170
 };
 
-//回中姿态
-int homePose[3] = {90, 90, 90}; // 底座、大臂、小臂
-int homeGripperAngle = 20; //回中时爪子张开，方便衔接
 
 int gripperCloseAngle[3] = {85, 70, 75};//三个物体不同夹爪夹紧角度
 
@@ -67,7 +64,7 @@ void doGrab(int index){
   waitMs(500);
 
   // 8. 抬升并回中
-  setAngles(homePose[0], homePose[1], homePose[2], gripperOpenAngle);
+  setAngles(homePose[0], homePose[1], homePose[2], homeGripperAngle);
   waitMs(800);
 
   isAutoRunning = false;

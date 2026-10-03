@@ -32,8 +32,12 @@ const int shoulderPin = 7;//大臂
 const int elbowPin = 8;//小臂
 const int gripperPin = 6;//夹爪
 
-//全局变量：控制机械臂整体运行速度
+//控制机械臂整体运行速度
 int motorSpeed = 20;
+
+//回中姿态
+int homePose[3] = {90, 90, 90}; // 底座、大臂、小臂
+int homeGripperAngle = 20; //回中时爪子张开，方便衔接
 
 //串口接收缓冲区与标志位
 String inputString = "";
@@ -141,7 +145,8 @@ void loop() {
   if(isRecording){//录制开始
     if(millis() - lastRecordTime >= recordInterval){//非阻塞式定时
       lastRecordTime = millis();
-      if(recordCount < MAX_RECORDS){
+      if(recordCount < MAX_RECORDS){//判断记录次数
+        //记录各个舵机的角度
         recordData[recordCount][0] = base.read();
         recordData[recordCount][1] = shoulder.read();
         recordData[recordCount][2] = elbow.read();

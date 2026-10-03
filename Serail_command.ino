@@ -47,16 +47,38 @@ void HandleSerial(){
         break;
 
       case '2':
+        if(isAutoRunning) Serial.println("Busy!"); break;
+        //第一次按下
+        Serial.println("Record Start");
+        isRecording = true;
+        recordCount = 0;
+        lastRecordTime = millis();
+        //第二次按下
+        if(isRecording == true){
+          isRecording = false;
+          Serial.println("Record Stop");
+        }
         break;
 
       case '3':
+        if(isAutoRunning || isRecording) Serial.println("Busy!"); break;
+
+        isAutoRunning = true;
+        Serial.println("Play Start");
+        for(int i = 0 ; i < recordCount ; i++){
+          setAngles(recordData[i][0],recordData[i][1],
+          recordData[i][2],recordData[i][3]);
+        }
+        Serial.println("play Stop");
         break;
 
       case '4':
+        setAngles(homePose[0], homePose[1], homePose[2], homeGripperAngle);
         break;
 
       // -------------自检-------------
       case 'T': servoTest(); Serial.println("SelfTest:Done"); break;
+      
       default: Serial.println("Error!"); break;
     }
   }
