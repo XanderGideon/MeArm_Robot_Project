@@ -29,7 +29,7 @@ const int joy2Y = A3; // 夹爪
 const int JOY_DEADZONE = 60;
 
 // 安全角度范围
-int baseMin = 25,   baseMax = 170;//底座
+int baseMin = 0,   baseMax = 180;//底座
 int shMin   = 35,  shMax   = 155;//大臂
 int elMin   = 25,   elMax   = 155;//小臂
 int grMin   = 20,  grMax   = 90;//爪子
@@ -103,7 +103,7 @@ void setup() {
   Serial.println(F("System Ready! ")); // 开机提示
 
   //缓冲区预留内存
-  inputString.reserve(32);
+  inputString.reserve(64);
 
   //连接舵机
   base.attach(basePin);
@@ -144,7 +144,7 @@ void loop() {
 }
 
 // ================= 串口接收中断（每轮 loop 之间自动调用）=================
-void serialReceive() {
+void serialEvent() {
   while (Serial.available() > 0) {
     char ch = (char)Serial.read();
     inputString += ch;

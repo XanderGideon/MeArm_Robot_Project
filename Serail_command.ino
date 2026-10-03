@@ -35,17 +35,17 @@ void HandleSerial(){
       case 'C': doGrab(2); break;
 
     // ---------- 任务三：遥控板四个按键 ----------
-      case '1':
+      case '1'://循环夹取ABC三个物体
         if(isAutoRunning || isRecording) {Serial.println(F("Busy!"));break;}
 
-        Serial.print(F("Key1 -> object:"));
+        Serial.print(F("Key1 Pressed -> object:"));
         Serial.println(currentgrab);//0=A, 1=B, 2=C
         doGrab(currentgrab);
         currentgrab++;
         if(currentgrab > 2) currentgrab = 0;
         break;
 
-      case '2':
+      case '2'://录制
         if(isAutoRunning){Serial.println(F("Busy!"));break;}
         //开始录制
         if(isRecording == false){
@@ -69,19 +69,21 @@ void HandleSerial(){
         }
         break;
 
-      case '3':
+      case '3'://播放
         if(isAutoRunning || isRecording){Serial.println(F("Busy!"));break;}
 
         isAutoRunning = true;
         Serial.println(F("Play Start"));
         for(int i = 0 ; i < recordCount ; i++){
-          setAngles(recordData[i][0],recordData[i][1],
-          recordData[i][2],recordData[i][3]);
+          setAngles(recordData[i][0],recordData[i][1],recordData[i][2],recordData[i][3]);
+          delay(recordInterval);
         }
+        isAutoRunning = false;
+        clearSerial();
         Serial.println(F("play Stop"));
         break;
 
-      case '4':
+      case '4'://回中
         setAngles(homePose[0], homePose[1], homePose[2], homeGripperAngle);
         break;
 
@@ -92,6 +94,10 @@ void HandleSerial(){
     }
   }
   else if(inputString.startsWith("x") || inputString.startsWith("X")){
+    if (isAutoRunning || isRecording) {
+      Serial.println(F("Busy!"));
+      return;
+    }
     SerialCommandXYZ(inputString);
   }
   else{
@@ -115,8 +121,8 @@ void SerialCommandXYZ(String str){
     // 提取 x10, y30, z20 中的数字（substring函数范围是左开右闭）
     //toInt把字符串转成整数
     int xValue = str.substring(1, firstComma).toInt();
-    int yValue = str.substring(firstComma + 1, secondComma).toInt(); // 多跳了一个字符
-    int zValue = str.substring(secondComma + 1).toInt();             
+    int yValue = str.substring(firstComma + 2, secondComma).toInt(); // 多跳了一个字符
+    int zValue = str.substring(secondComma + 2).toInt();             
 
     // 写舵机的同时更新 baseAngle/shAngle/elAngle，
     // 否则摇杆那一轮会把刚下发的角度覆盖掉，看起来就是“串口指令没反应”
