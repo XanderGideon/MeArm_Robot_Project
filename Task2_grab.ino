@@ -33,8 +33,14 @@ void doGrab(int index){
   int placeEl   = objectPos[index][5];
   int closeAngle = gripperCloseAngle[index]; // 获取该物体的专属闭合角度
 
+  //在放置高度和抓取高度中选择高的那一个，设置为移动过程中的高度，防止撞到物体
+  int tallSh = grabSh;
+  if(placeSh < tallSh) tallSh = placeSh;
+  tallSh = tallSh - liftAngle;//角度越小，爪子越高
+  if(tallSh < grMin) tallSh = grMin;//限幅
+
   // 1. 底座转到抓取点，同时抬高大臂，爪子张开
-  setAngles(grabBase, grabSh - liftAngle, grabEl, gripperOpenAngle);
+  setAngles(grabBase, tallSh, grabEl, gripperOpenAngle);
   waitMs(800);
 
   // 2. 下降到抓取高度
@@ -46,11 +52,11 @@ void doGrab(int index){
   waitMs(500);
 
   // 4. 抬升
-  setAngles(grabBase, grabSh - liftAngle, grabEl, closeAngle);
+  setAngles(grabBase, tallSh, grabEl, closeAngle);
   waitMs(800);
 
   // 5. 底座转到放置点
-  setAngles(placeBase, grabSh - liftAngle, grabEl, closeAngle);
+  setAngles(placeBase, tallSh, grabEl, closeAngle);
   waitMs(800);
 
   // 6. 下降到放置高度
