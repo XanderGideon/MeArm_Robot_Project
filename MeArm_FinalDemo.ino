@@ -12,7 +12,7 @@ const int gripperPin = 6;//夹爪
 int baseMin = 0,   baseMax = 180;//底座
 int shMin   = 35,  shMax   = 155;//大臂
 int elMin   = 25,   elMax   = 155;//小臂
-int grMin   = 20,  grMax   = 90;//爪子
+int grMin   = 90,  grMax   = 20;//爪子
 
 // 当前角度（唯一真值：所有控制方式都改这几个变量）
 int baseAngle = 90;

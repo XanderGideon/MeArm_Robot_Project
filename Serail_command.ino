@@ -1,4 +1,21 @@
-//// ===== 把串口里堆积的旧指令丢掉 =====
+/* =====================================================================
+     1) clearSerial()       把动作期间堆积的旧按键/旧指令丢掉
+     2) HandleSerial()      串口指令分发（唯一的入口，loop 每轮调一次）
+     3) SerialCommandXYZ()  x90,y60,z30 这种写法的数字解析
+    外加打印函数 printHelp() printSpeed()，以及遥控板长按码 L1~L8。
+   ---------------------------------------------------------------------
+   串口指令表（9600，每条结尾必须带换行）：
+     O            夹爪张开           S            夹爪闭合
+     H            任务一摇杆提速      L      任务一摇杆降速
+     M            打印这张表                  
+     A / B / C    夹取物体 A / B / C
+     x90,y60,z30  三个关节一起给角度（字母后面的数；逗号后面不能加空格，
+                  也不认 90,60,30 这种不带字母的写法）
+     1~8          等于遥控板短按 1~8
+     L5~L8        等于遥控板长按 5~8
+   ===================================================================== */
+
+// ===== 把串口里堆积的旧指令丢掉 =====
 // 一个抓取动作要好几秒，动作过程中按下的按键会堆在串口缓冲区里，
 void clearSerial(){
   if(Serial.available() > 0) Serial.read();
@@ -39,130 +56,86 @@ void printSpeed() {
 }
 // ================= 串口指令分发 =================
 void HandleSerial() {
-  if (!inputComplete) return;
+  if(!inputComplete) return;
 
-  inputString.trim();  // 去掉回车换行
+  inputString.trim(); //去掉回车换行和前后空格
 
-  if (inputString.length() == 0) {  //如果去掉换行后是空字符串（只按了回车），直接跳过，不报错
+  if(inputString.length() == 0){//如果去掉换行后是空字符串（只按了回车），直接跳过，不报错
+    inputString = "";
     inputComplete = false;
     return;
   }
 
-  if (inputString.length() == 1) {
-    char cmd = inputString[0];  //从字符串里取第一个字符
+  char cmd = inputString[0];
+  int len = inputString.length();
 
-    switch (cmd) {
-      // ------------- 任务一：固定指令 ------------
+  // ---------------- 单字符指令 ----------------
+  if(len == 1){
+    switch(cmd){
       case 'O':
-        if (isAutoRunning || isRecording) {
-          Serial.println(F("Busy!"));
-          break;
-        }
-        setAngles(baseAngle, shAngle, elAngle, grMin);
-        Serial.println("Gripper:Open");
-        break;
+        if(autoBusy()){ Serial.println(F("Busy!")); break; }
+        setAngles(baseAngle, shAngle, elAngle, grMax);
+        Serial.println(F("Gripper:Open")); 
+        break;    
+      
 
       case 'S':
-        if (isAutoRunning||isRecording) {
-          Serial.println(F("Busy!"));
-          break;
-        }
-        setAngles(baseAngle, shAngle, elAngle, grMax);
-        Serial.println("Gripper:Close");
-        break;
+        if(autoBusy()){ Serial.println(F("Busy!")); break; }
+        setAngles(baseAngle, shAngle, elAngle, grMin);
+        Serial.println(F("Gripper:Open")); 
+        break;    
 
       case 'H':
-        if (speedLevel > 0) speedLevel--;
+        if(speedLevel > 0) speedLevel--;
         motorSpeed = joyDelayTable[speedLevel];
-        Serial.println(F("MotorSpeed:High"));
+        printSpeed();
         break;
 
       case 'L':
-        if (speedLevel < speedCount - 1) speedLevel++;
+        if(speedLevel < speedCount - 1) speedLevel ++;
         motorSpeed = joyDelayTable[speedLevel];
-        Serial.println(F("MotorSpeed:Low"));
+        printSpeed();
         break;
 
       // ---------- 任务二：上位机发 A / B / C ----------
-      case 'A': doGrab(0); break;
-      case 'B': doGrab(1); break;
-      case 'C':
-        doGrab(2);
-        break;
+      case 'A':doGrab(0);break;
+      case 'B':doGrab(1);break;
+      case 'C':doGrab(2);break;
 
-        // ---------- 任务三：遥控板四个按键 ----------
-      case '1':  //循环夹取ABC三个物体
-        if (autoBusy()) {
-          Serial.println(F("Busy!"));
-          break;
-        }
-        Serial.print(F("Key1 Pressed -> object:"));
-        Serial.println(currentgrab);  //0=A, 1=B, 2=C
-        doGrab(currentgrab);
-        currentgrab++;
-        if (currentgrab > 2) currentgrab = 0;
+      // ---------- 任务三 / 五：遥控板短按发过来的就是单个数字 ----------
+      case '1': case '2':case '3': case '4':
+      case '5': case '6':case '7': case '8':
+        doKey(cmd - '0', false);
         break;
-
-      case '2':  //录制
-        if (isAutoRunning) {
-          Serial.println(F("Busy!"));
-          break;
-        }
-        //开始录制
-        if (isRecording == false) {
-          isRecording = true;
-          recordCount = 0;
-          lastRecordTime = millis();
-          Serial.println(F("Record Start"));
-        }
-        //结束录制
-        else {
-          isRecording = false;
-          Serial.print("Record:STOP  points=");
-          Serial.print(recordCount);
-          Serial.print("  time=");
-          Serial.print((long)recordCount * recordInterval / 1000);
-          Serial.println(" s");
-          // 考核要求录制时长必须大于 10 秒，不够就当场提醒，别等演示完才发现
-          if ((long)recordCount * recordInterval < 10000) {
-            Serial.println("WARNING: time <= 10s, need >10s !");
-          }
-        }
-        break;
-
-      case '3':  //播放
-        if (autoBusy()) {
-          Serial.println(F("Busy!"));
-          break;
-        }
-        isAutoRunning = true;
-        Serial.println(F("Play Start"));
-        for (int i = 0; i < recordCount; i++) {
-          setAngles(recordData[i][0], recordData[i][1], recordData[i][2], recordData[i][3]);
-          delay(recordInterval);
-        }
-        isAutoRunning = false;
-        clearSerial();
-        Serial.println(F("play Stop"));
-        break;
-
-      case '4':  //回中
-        setAngles(homePose[0], homePose[1], homePose[2], homeGripperAngle);
-        break;
+      
+      // -------------- 打印操作指南 ---------------
+      case 'M': printHelp();
 
       default: Serial.println(F("Error!")); break;
     }
-  } else if (inputString.startsWith("x") || inputString.startsWith("X")) {
-    if (isAutoRunning || isRecording) {
-      Serial.println(F("Busy!"));
-      return;
-    }
-    SerialCommandXYZ(inputString);
-  } else {
-    Serial.println("Error!");  // 只有真正乱码的指令才会走到这里
   }
-  inputString = "";  //清除接收区
+
+  // ------------------ 遥控板长按 --------------------
+  else if(len == 2 && cmd == 'L' && inputString[1] >= '5' && inputString[1] <= '8'){
+    doKey(inputString[1] - '0', true);
+  }
+
+  // ---------------- x90,y60,z30：一条指令给三个角度 ----------------
+  else if(cmd == 'x'){
+    if(autoBusy()){
+      Serial.println(F("Busy!"));
+    } 
+    else{
+      SerialCommandXYZ(inputString);
+    } 
+  }
+
+  else{
+    Serial.println(F("Error!")); // 写法不对或乱码才会走到这里
+  }
+
   inputComplete = false;
+  inputString = "";
 }
 
 //实现一条指令控制三个舵机
