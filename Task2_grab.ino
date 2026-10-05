@@ -49,7 +49,7 @@ void doGrab(int index){
 
   // 3. 使用该物体专属角度夹住物体
   setAngles(grabBase, grabSh, grabEl, closeAngle);
-  waitMs(500);
+  waitMs(800);
 
   // 4. 抬升
   setAngles(grabBase, tallSh, grabEl, closeAngle);
@@ -65,7 +65,7 @@ void doGrab(int index){
 
   // 7. 松开
   setAngles(placeBase, placeSh, placeEl, gripperOpenAngle);
-  waitMs(500);
+  waitMs(800);
 
   // 8. 抬升并回中
   setAngles(homePose[0], homePose[1], homePose[2], homeGripperAngle);
