@@ -75,7 +75,7 @@ void HandleSerial(){
 
     // ---------- 任务三：遥控板四个按键 ----------
       case '1'://循环夹取ABC三个物体
-        if(isAutoRunning || isRecording) {Serial.println(F("Busy!"));break;}
+        if(autoBusy()) {Serial.println(F("Busy!"));break;}
 
         Serial.print(F("Key1 Pressed -> object:"));
         Serial.println(currentgrab);//0=A, 1=B, 2=C

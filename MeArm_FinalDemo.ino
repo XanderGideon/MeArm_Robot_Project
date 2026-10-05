@@ -23,8 +23,8 @@ int grAngle   = 90;
 //摇杆引脚
 const int joy1X = A0; // 底座
 const int joy1Y = A1; // 大臂
-const int joy2X = A2; // 小臂
-const int joy2Y = A3; // 夹爪
+const int joy2X = A3; // 小臂
+const int joy2Y = A2; // 夹爪
 
 //摇杆回中死区：模拟量偏离512超过这个值才算“真的推了摇杆”
 const int joyDeadzone = 60;
@@ -90,7 +90,9 @@ void updateJoysticks(){
 
   bool moved = false;
   int b = baseAngle, s = shAngle, e = elAngle, g = grAngle;
-
+  
+  // 每个轴：(摇杆值 - 512) / 100 => 死区外每 100 个模拟量变化约 1 度，
+  // 由于舵机硬件存在客观问题，故而设置死区
   if(v1x < 512 - joyDeadzone || v1x > 512 + joyDeadzone) {b += (512 - v1x)/100; moved = true;}
   if(v1y < 512 - joyDeadzone || v1y > 512 + joyDeadzone) {s += (512 - v1y)/100; moved = true;}
   if(v2x < 512 - joyDeadzone || v2x > 512 + joyDeadzone) {e += (512 - v2x)/100; moved = true;}
@@ -99,6 +101,10 @@ void updateJoysticks(){
   if(moved){
     setAngles(b, s, e, g);
   }
+}
+
+bool autoBusy(){
+  return isAutoRunning || isRecording;
 }
 
 void setup() {
