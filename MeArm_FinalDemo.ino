@@ -8,9 +8,11 @@ const int shoulderPin = 7;//大臂
 const int elbowPin = 8;//小臂
 const int gripperPin = 6;//夹爪
 
-//控制机械臂整体运行速度
-int motorSpeed = 20;
-
+//===========速度控制===========
+int motorSpeed = 20;//正常速度
+const int speedCount = 3;
+const int speedTable[speedCount] = {10, 20, 40};
+int speedLevel = 1;
 //回中姿态
 int homePose[3] = {90, 90, 90}; // 底座、大臂、小臂
 int homeGripperAngle = 20; //回中时爪子张开，方便衔接

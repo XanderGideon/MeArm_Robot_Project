@@ -8,6 +8,37 @@ void clearSerial(){
   inputComplete = false;
 }
 
+const char* speedName(int level){
+  if(level <= 0) return "fast";
+  if(level == 1) return "normal";
+  return "slow";
+}
+
+void printHelp(){
+  Serial.println(F("----- meArm 全部任务（一 / 二 / 三 / 五),共八个按键 -----"));
+  Serial.println(F("按键 1~4(任务一 / 二 / 三）："));
+  Serial.println(F("  1=循环夹取 A/B/C      2=录制(再按一次结束)"));
+  Serial.println(F("  3=回放上一次录的      4=回中"));
+  Serial.println(F("按键 5~8(任务五):"));
+  Serial.println(F("短按:5=记一个示教点       6=开始画 / 停下"));
+  Serial.println(F("  7=暂停 / 继续        8=取消（停住回待机）"));
+  Serial.println(F("长按:5=清空示教点     6=换任务类型"));
+  Serial.println(F("      7=换图形         8=打印状态"));
+  Serial.println(F("串口:O=张开 S=闭合 H/L=任务一摇杆提速/降速"));
+  Serial.println(F("      M=按键表 P=状态 T=自检(后续任务速度固定,不受H/L影响)"));
+  Serial.println(F("      x90,y60,z30  -> 三个舵机一起动(只认这一个格式)"));
+  Serial.println(F("      A / B / C    -> 夹取物体 A / B / C"));
+  Serial.println(F("      1~8 / L1~L8  -> 遥控板短按 / 长按"));
+  Serial.println(F("--------------------------------------------"));
+}
+
+void printSpeed(){
+  Serial.print(F("Speed -> "));
+  Serial.print(speedName(speedLevel));
+  Serial.print(F("  (joystick delay "));
+  Serial.print(motorSpeed);
+  Serial.println(F("ms, only task 1)"));  
+}
 // ================= 串口指令分发 =================
 void HandleSerial(){
   if(!inputComplete) return;
@@ -26,8 +57,16 @@ void HandleSerial(){
       // ------------- 任务一：固定指令 ------------
       case 'O': if (isAutoRunning) { Serial.println(F("Busy!")); break; } setAngles(baseAngle, shAngle, elAngle, grMin); Serial.println("Gripper:Open"); break;
       case 'S': if (isAutoRunning) { Serial.println(F("Busy!")); break; } setAngles(baseAngle, shAngle, elAngle, grMax); Serial.println("Gripper:Close"); break;
-      case 'H': motorSpeed = 10; Serial.println(F("MotorSpeed:High")); break;
-      case 'L': motorSpeed = 30; Serial.println(F("MotorSpeed:Low")); break;
+      case 'H': 
+        if(speedLevel > 0) speedLevel--;
+        motorSpeed = speedTable[speedLevel]; 
+        Serial.println(F("MotorSpeed:High")); 
+        break;
+      case 'L': 
+        if(speedLevel < speedCount - 1) speedLevel++;
+        motorSpeed = speedTable[speedLevel]; 
+        Serial.println(F("MotorSpeed:Low")); 
+        break;
 
       // ---------- 任务二：上位机发 A / B / C ----------
       case 'A': doGrab(0); break;
@@ -140,21 +179,10 @@ void SerialCommandXYZ(String str){
   }
 }
 
-void printHelp(){
-  Serial.println(F("----- meArm 全部任务（一 / 二 / 三 / 五),共八个按键 -----"));
-  Serial.println(F("按键 1~4(任务一 / 二 / 三）："));
-  Serial.println(F("  1=循环夹取 A/B/C      2=录制(再按一次结束)"));
-  Serial.println(F("  3=回放上一次录的      4=回中"));
-  Serial.println(F("按键 5~8(任务五):"));
-  Serial.println(F("短按:5=记一个示教点       6=开始画 / 停下"));
-  Serial.println(F("  7=暂停 / 继续        8=取消（停住回待机）"));
-  Serial.println(F("长按:5=清空示教点     6=换任务类型"));
-  Serial.println(F("      7=换图形         8=打印状态"));
-  Serial.println(F("串口:O=张开 S=闭合 H/L=任务一摇杆提速/降速"));
-  Serial.println(F("      M=按键表 P=状态 T=自检(后续任务速度固定,不受H/L影响)"));
-  Serial.println(F("      x90,y60,z30  -> 三个舵机一起动(只认这一个格式)"));
-  Serial.println(F("      A / B / C    -> 夹取物体 A / B / C"));
-  Serial.println(F("      1~8 / L1~L8  -> 遥控板短按 / 长按"));
-  Serial.println(F("--------------------------------------------"));
-}
+
+
+
+
+
+
 
