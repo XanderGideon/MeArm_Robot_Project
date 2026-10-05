@@ -59,12 +59,12 @@ void HandleSerial(){
       case 'S': if (isAutoRunning) { Serial.println(F("Busy!")); break; } setAngles(baseAngle, shAngle, elAngle, grMax); Serial.println("Gripper:Close"); break;
       case 'H': 
         if(speedLevel > 0) speedLevel--;
-        motorSpeed = speedTable[speedLevel]; 
+        motorSpeed = joyDelayTable[speedLevel]; 
         Serial.println(F("MotorSpeed:High")); 
         break;
       case 'L': 
         if(speedLevel < speedCount - 1) speedLevel++;
-        motorSpeed = speedTable[speedLevel]; 
+        motorSpeed = joyDelayTable[speedLevel]; 
         Serial.println(F("MotorSpeed:Low")); 
         break;
 
