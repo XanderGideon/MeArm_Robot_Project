@@ -21,7 +21,7 @@ int gripperOpenAngle = 20;//夹爪张角
 int liftAngle = 25;//大臂抬升高度，设置时大臂角度减去这个值
 
 
-void doGrab(int index){
+void doGrab(int index){//index即为currentgrab
   if(autoBusy()){    // 自动动作中 / 录制中，不许插进来
     Serial.println("Busy!");
     return;

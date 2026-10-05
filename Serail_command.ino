@@ -1,9 +1,7 @@
 //// ===== 把串口里堆积的旧指令丢掉 =====
 // 一个抓取动作要好几秒，动作过程中按下的按键会堆在串口缓冲区里，
-void clearSerial() {
-  while (Serial.available() > 0) {
-    Serial.read();
-  }
+void clearSerial(){
+  if(Serial.available() > 0) Serial.read();
   inputString = "";
   inputComplete = false;
 }

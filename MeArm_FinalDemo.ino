@@ -103,10 +103,6 @@ void updateJoysticks(){
   }
 }
 
-bool autoBusy(){
-  return isAutoRunning || isRecording;
-}
-
 void setup() {
   //开启串口
   Serial.begin(9600);
