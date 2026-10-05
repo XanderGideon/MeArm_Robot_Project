@@ -49,15 +49,15 @@ bool inputComplete = false;
 bool isAutoRunning = false;
 
 //任务三相关：循环抓取计数器cnt
-int currentgrab = 0;//0A,1B,2C
+int currentgrab = 0;//0 = A,1 = B,2 = C
 
 //任务三相关：录制
-#define MAX_RECORDS 200 //一共200个采样点
-byte recordData[MAX_RECORDS][4];  //每个点记录四个舵机此时的角度
-int recordCount = 0;   //已记录数
-bool isRecording = false;  //标志位
+#define MAX_RECORDS 200      //一共200个采样点
+byte recordData[MAX_RECORDS][4];   //每个点记录四个舵机此时的角度
+int recordCount = 0;               //已记录数
+bool isRecording = false;          //标志位
 unsigned long lastRecordTime = 0;  //用于非阻塞计时
-const int recordInterval = 60;  //每60ms记一次时，共0.2*60 = 12s > 10s  
+const int recordInterval = 60;     //每60ms记一次，共 200*60ms = 12s > 10s
 
 // 一个改变舵机角度的入口，将原本散乱的write函数全部集合于此，改变时只需调用函数
 void setAngles(int b, int s, int e, int g){
@@ -135,23 +135,23 @@ void loop() {
   HandleSerial();   //接收串口cmd
 
   //============任务三：录制采样============
-  if(isRecording){//录制开始
-    if(millis() - lastRecordTime >= recordInterval){//非阻塞式定时
+  if(isRecording){
+    if(millis() - lastRecordTime >= recordInterval){
       lastRecordTime = millis();
-      if(recordCount < MAX_RECORDS){//判断记录次数
-        //记录各个舵机的角度
+      if(recordCount < MAX_RECORDS){
         recordData[recordCount][0] = base.read();
         recordData[recordCount][1] = shoulder.read();
         recordData[recordCount][2] = elbow.read();
         recordData[recordCount][3] = gripper.read();
-        recordCount++;        
+        recordCount++;
       }
-      if(recordCount >= MAX_RECORDS){// 录满了自动停，并且提示一下
+      if(recordCount >= MAX_RECORDS){
         isRecording = false;
-        Serial.println(F("Record buffer is full , Stop Recording"));
+        printRecordFull();
       }
     }
   }
+
 
   // 只有在没有自动任务时，摇杆才控制舵机
   //录制时必须用摇杆,故而不判断isRecording
