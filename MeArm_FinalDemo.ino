@@ -71,7 +71,7 @@ const int recordInterval = 60;     //每60ms记一次，共 200*60ms = 12s > 10s
       只跟小臂舵机角有关，跟大臂转到哪完全无关。
     2.同一套连杆让爪子始终水平，所以夹在爪缝里的笔永远竖直。
       那么可得正解就是"两连杆 + 末端一段竖直的笔"：
-
+      t1 = (baseAngle - baseZero) * baseDir            // 底座与Z轴的夹角
       t2 = (shAngle - shZero) * shDir                  // 大臂与水平面夹角
       a  = (elAngle - elZero) * elGain                 // 小臂与水平面夹角（与 t2 无关）
       r  = baseOffset + armLen1*cos(t2) + armLen2*cos(a)   // 笔尖离底座转轴的距离
@@ -103,7 +103,7 @@ float baseZero = 90.0,  baseDir =  1.0;   // 底座：数学角从 +x 轴逆时�
 float shZero   = 180.0, shDir   = -1.0;   // 大臂：数学角从水平面逆时针量
 float elZero   = 117.2, elGain  =  0.75;  // 小臂：绝对角 = (elAngle - elZero) * elGain
  
- 
+
 /* 3) 高度：z 表示笔尖离桌面多高，单位 mm */
 float paperZ = 0.0;      // 笔尖刚好碰到纸的时候 z 是多少（一般就是 0）
 float liftZ  = 15.0;     // 抬笔画线的时候抬多高
