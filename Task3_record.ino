@@ -17,7 +17,7 @@
 void recordToggle(){
   if(isRecording == false){ //开始录制
     isRecording = true;
-    recordCount = 0;
+    recordCount = 0;  //清空录制计数点
     lastRecordTime = millis();
     Serial.println(F("Record Start"));
     Serial.println(F("# 用摇杆做动作，超过 10 秒后再按一次 2 结束"));

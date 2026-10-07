@@ -74,14 +74,14 @@ void HandleSerial() {
     switch(cmd){
       case 'O':
         if(autoBusy()){ Serial.println(F("Busy!")); break; }
-        setAngles(baseAngle, shAngle, elAngle, grMax);
+        setAngles(baseAngle, shAngle, elAngle, grMin);
         Serial.println(F("Gripper:Open")); 
         break;    
       
 
       case 'S':
         if(autoBusy()){ Serial.println(F("Busy!")); break; }
-        setAngles(baseAngle, shAngle, elAngle, grMin);
+        setAngles(baseAngle, shAngle, elAngle, grMax);
         Serial.println(F("Gripper:Open")); 
         break;    
 
@@ -111,6 +111,13 @@ void HandleSerial() {
       // -------------- 打印操作指南 ---------------
       case 'M': printHelp();
 
+      case 'P':
+        Serial.println(base.read());
+        Serial.println(shoulder.read());
+        Serial.println(elbow.read());
+        Serial.println(gripper.read());
+        break;
+        
       default: Serial.println(F("Error!")); break;
     }
   }
