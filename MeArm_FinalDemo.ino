@@ -92,7 +92,7 @@ float armLen1    = 82.0;
 float armLen2    = 179.0;
 float penDown    = 68.0;
 float baseHeight = 82.0;
-float baseOffset = -20.0;
+float baseOffset = 20.0;
 
 
 /* 2) 舵机角度和数学角度的换算：
