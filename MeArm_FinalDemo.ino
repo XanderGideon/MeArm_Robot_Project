@@ -89,19 +89,19 @@ const int recordInterval = 60;     //每60ms记一次，共 200*60ms = 12s > 10s
       baseOffset = 底座转轴心 -> 肩转轴心，水平距离
 */
 float armLen1    = 82.0;
-float armLen2    = 140.0;
+float armLen2    = 179.0;
 float penDown    = 68.0;
 float baseHeight = 82.0;
-float baseOffset = 20.0;
+float baseOffset = -20.0;
 
 
 /* 2) 舵机角度和数学角度的换算：
       大臂：t2 = (shAngle - shZero) * shDir            —— 零位 + 方向
-      小臂：a  = (elAngle - elZero) * elGain           —— 零位 + 比例（涵盖方向）
+      小臂：a  = (elAngle - elZero) * elGain           —— 零位 + 连杆传动比（涵盖方向）
 */
 float baseZero = 90.0,  baseDir =  1.0;   // 底座：数学角从 +x 轴逆时针量
 float shZero   = 180.0, shDir   = -1.0;   // 大臂：数学角从水平面逆时针量
-float elZero   = 117.2, elGain  =  0.75;  // 小臂：绝对角 = (elAngle - elZero) * elGain
+float elZero   = 111.5, elGain  =  0.75;  // 小臂：绝对角 = (elAngle - elZero) * elGain
  
 
 /* 3) 高度：z 表示笔尖离桌面多高，单位 mm */
