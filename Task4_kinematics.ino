@@ -24,3 +24,33 @@ void calcTipPos(){
   tipY = r * sin(t1);
   tipZ = baseHeight + armLen1 * sin(t2) + armLen2 * sin(a) - penDown;
 }
+
+//四舍五入，把浮点数角度换算成整数角度
+int roundToInt(float t){
+  if(t >= 0) return (int)(t + 0.5);
+  return (int)(t - 0.5);
+}
+
+bool solveIK(float x, float y, float z){
+  float r = sqrt(x * x + y * y) + baseOffset; //解出肩关节到爪缝的水平距离
+  float dz = z + penDown - baseHeight; //解爪子到肩关节的竖直距离
+  float L = sqrt(r * r + dz * dz); //解肩关节到爪缝中心的距离
+
+  float reachMax = armLen1 + armLen2;
+  float reachMin = abs(armLen1 - armLen2);
+  if(L < reachMin) return false;
+  if(L > reachMax) return false;
+
+  float t1 = atan2(y, x); //先解出底座的偏转角，实现解耦，避免t123的三元计算，减少计算量
+  float c3 = (L * L - armLen1 * armLen1 - armLen2 * armLen2)/(2.0 * armLen1 * armLen2);
+  c3 = constrain(c3, -1.0, 1.0);
+  float t3 = elbowSign * acos(c3);
+  float t2 = atan2(dz, r) - atan2(armLen2 * sin(t3), armLen1 + armLen2 * cos(t3));
+  float alpha = t2 + t3; //小臂与水平面的绝对角
+
+  ikBase = roundToInt(baseZero + (t1 * PI / 180.0) * baseDir);
+  ikSh = roundToInt(shZero + (t2 * PI / 180.0) * shDir);
+  ikEl = round(elZero + (alpha * PI / 180.0) * elGain);
+  return true;
+}
+

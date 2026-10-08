@@ -86,13 +86,13 @@ const int recordInterval = 60;     //每60ms记一次，共 200*60ms = 12s > 10s
       armLen2    = 肘转轴中心 -> 爪缝中心（笔被夹住的那条缝）
       penDown    = 爪缝中心 -> 笔尖，笔夹紧后量竖直距离
       baseHeight = 肩转轴中心 -> 桌面
-      baseOffset = 底座转轴心 -> 肩转轴心，水平距离
+      baseOffset = 底座转轴心 -> 肩转轴心，水平距离(注意肩关节在底座舵机的后侧)
 */
 float armLen1    = 82.0;
 float armLen2    = 179.0;
 float penDown    = 68.0;
 float baseHeight = 82.0;
-float baseOffset = 20.0;
+float baseOffset = 20.0; 
 
 
 /* 2) 舵机角度和数学角度的换算：
@@ -102,7 +102,7 @@ float baseOffset = 20.0;
 float baseZero = 90.0,  baseDir =  1.0;   // 底座：数学角从 +x 轴逆时针量
 float shZero   = 180.0, shDir   = -1.0;   // 大臂：数学角从水平面逆时针量
 float elZero   = 111.5, elGain  =  0.75;  // 小臂：绝对角 = (elAngle - elZero) * elGain
- 
+float elbowSign = -1; //解决机械臂在物理层面的多解问题，e
 
 /* 3) 高度：z 表示笔尖离桌面多高，单位 mm */
 float paperZ = 0.0;      // 笔尖刚好碰到纸的时候 z 是多少（一般就是 0）
@@ -114,6 +114,9 @@ float paperY = 0.0;
 
 // ===================== 正运动学算出来的笔尖位置 =====================
 float tipX = 0.0, tipY = 0.0, tipZ = 0.0;
+
+//反解的角度
+int ikBase, ikSh, ikEl;
 
 // 一个改变舵机角度的入口，将原本散乱的write函数全部集合于此，改变时只需调用函数
 void setAngles(int b, int s, int e, int g){
