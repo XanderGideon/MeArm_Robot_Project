@@ -127,7 +127,9 @@ float tipX = 0.0, tipY = 0.0, tipZ = 0.0;
 int ikBase = 90, ikSh = 90, ikEl = 90;
 
 //任务五绘图相关变量
-#define  MAX_POINTS 5
+#define  MAX_POINTS 5  //最多5个示教点
+int taskType = 0; // 0=子任务一， 1=子任务二， 2=子任务四， 3=子任务五
+int drawState = 0; //当前任务进行状态
 
 // 一个改变舵机角度的入口，将原本散乱的write函数全部集合于此，改变时只需调用函数
 void setAngles(int b, int s, int e, int g){

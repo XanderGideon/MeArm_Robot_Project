@@ -15,7 +15,7 @@
    ===================================================================== */
 
 //正运动学：由三个舵机的夹角计算空间内坐标位置
-void calcTipPos(){
+void calcTipPosition(){
   float t1 = (baseAngle - baseZero) * baseDir * PI / 180.0;
   float t2 = (shAngle - shZero) * shDir * PI / 180.0;
   float a = (baseAngle - baseZero) * baseDir * PI / 180.0;
@@ -61,6 +61,6 @@ bool solveIK(float x, float y, float z){
 bool moveToTip(float x, float y, float z){
   if(!solveIK(x, y, z)) return false;
   setAngles(ikBase, ikSh, ikEl, grAngle);//更新关节角度并驱动舵机
-  calcTipPos();//通过最新的关节角度进行正解计算最新的位置
+  calcTipPosition();//通过最新的关节角度进行正解计算最新的位置
   return true;
 }
