@@ -97,7 +97,6 @@ float penDown    = 68.0;
 float baseHeight = 82.0;
 float baseOffset = 20.0; 
 
-
 /* 2) 舵机角度和数学角度的换算：
       baseZero：机械臂朝前方时的底座舵机角度
       shZero：是大臂与水平面平行时的大臂舵机角度
@@ -109,7 +108,7 @@ float baseOffset = 20.0;
 float baseZero = 90.0,  baseDir =  1.0;   // 底座：数学角从 +x 轴逆时针量
 float shZero   = 180.0, shDir   = -1.0;   // 大臂：数学角从水平面逆时针量
 float elZero   = 105.0, elGain  =  0.89;  // 小臂：绝对角 = (elAngle - elZero) * elGain
-float elbowSign = -1; //解决机械臂在物理层面的多解问题，e
+float elbowSign = -1; //解决机械臂在物理层面的多解问题，elbowSign = -1 说明取肘部在上的解
 
 /* 3) 抬笔高度 单位 mm */
 float liftZ  = 15.0;     // 抬笔画线的时候抬多高
