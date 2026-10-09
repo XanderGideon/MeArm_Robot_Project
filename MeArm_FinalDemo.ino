@@ -14,6 +14,9 @@ int shMin   = 35,  shMax   = 155;//大臂
 int elMin   = 25,   elMax   = 155;//小臂
 int grMin   = 0,  grMax   = 90;//爪子
 
+//肘部最多能折回來多少
+float foldMin = -115.0;
+
 // 当前角度（唯一真值：所有控制方式都改这几个变量）
 int baseAngle = 90;
 int shAngle   = 90;
@@ -108,19 +111,22 @@ float shZero   = 180.0, shDir   = -1.0;   // 大臂：数学角从水平面逆�
 float elZero   = 105.0, elGain  =  0.89;  // 小臂：绝对角 = (elAngle - elZero) * elGain
 float elbowSign = -1; //解决机械臂在物理层面的多解问题，e
 
-/* 3) 高度：z 表示笔尖离桌面多高，单位 mm */
-float paperZ = 0.0;      // 笔尖刚好碰到纸的时候 z 是多少（一般就是 0）
+/* 3) 抬笔高度 单位 mm */
 float liftZ  = 15.0;     // 抬笔画线的时候抬多高
 
-/* 4) 纸放在哪：纸面坐标的原点 (0,0) 在机械臂坐标里的位置 */
+/* 4) 纸放在哪：纸面坐标的原点 (0,0) 在机械臂坐标里的位置 也就是纸面中心和底座舵机转轴所在竖线距离为187mm
+      此处定义为纸面中心在绝对参考系之中的坐标*/
 float paperX = 187.0;
 float paperY = 0.0;
+float paperZ = 0.0;      
 
 // ===================== 正运动学算出来的笔尖位置 =====================
+//此处定义为笔尖在绝对参考系之中的坐标
 float tipX = 0.0, tipY = 0.0, tipZ = 0.0;
 
-//反解的角度
+// ===================== 逆运动学算出来的舵机角度 =====================
 int ikBase = 90, ikSh = 90, ikEl = 90;
+
 
 // 一个改变舵机角度的入口，将原本散乱的write函数全部集合于此，改变时只需调用函数
 void setAngles(int b, int s, int e, int g){
@@ -128,6 +134,14 @@ void setAngles(int b, int s, int e, int g){
   shAngle = constrain(s, shMin, shMax);
   elAngle = constrain(e, elMin, elMax);
   grAngle = constrain(g, grMin, grMax);
+
+  //防止自撞
+  int _t2 = (shAngle - shZero) * shDir;
+  int _alpha = (elAngle - elZero) * elGain;
+
+  if(_alpha - _t2 < foldMin) {
+    elAngle = constrain(roundToInt(elZero + (_t2 + foldMin) / elGain), elMin, elMax);
+  }
 
   base.write(baseAngle);
   shoulder.write(shAngle);
@@ -210,7 +224,6 @@ void loop() {
       }
     }
   }
-
 
   // 只有在没有自动任务时，摇杆才控制舵机
   //录制时必须用摇杆,故而不判断isRecording

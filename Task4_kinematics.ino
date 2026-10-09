@@ -20,7 +20,7 @@ void calcTipPos(){
   float t2 = (shAngle - shZero) * shDir * PI / 180.0;
   float a = (baseAngle - baseZero) * baseDir * PI / 180.0;
 
-  float r = baseOffset + armLen1 * cos(t2) + armLen2 * cos(a);
+  float r = armLen1 * cos(t2) + armLen2 * cos(a) - baseOffset;
   tipX = r * cos(t1);
   tipY = r * sin(t1);
   tipZ = baseHeight + armLen1 * sin(t2) + armLen2 * sin(a) - penDown;
@@ -50,6 +50,7 @@ bool solveIK(float x, float y, float z){
   float t2 = atan2(dz, r) - atan2(armLen2 * sin(t3), armLen1 + armLen2 * cos(t3));
   float alpha = t2 + t3; //小臂与水平面的绝对角
 
+  //反解后的舵机角度
   ikBase = roundToInt(baseZero + (t1 * PI / 180.0) * baseDir);
   ikSh = roundToInt(shZero + (t2 * PI / 180.0) * shDir);
   ikEl = round(elZero + (alpha * PI / 180.0) * elGain);
