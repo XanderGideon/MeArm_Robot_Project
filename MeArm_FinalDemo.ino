@@ -89,7 +89,7 @@ const int recordInterval = 60;     //每60ms记一次，共 200*60ms = 12s > 10s
       baseOffset = 底座转轴心 -> 肩转轴心，水平距离(注意肩关节在底座舵机的后侧)
 */
 float armLen1    = 82.0;
-float armLen2    = 179.0;
+float armLen2    = 179.0; //各种姿态下实测出来的结果
 float penDown    = 68.0;
 float baseHeight = 82.0;
 float baseOffset = 20.0; 
@@ -116,7 +116,7 @@ float paperY = 0.0;
 float tipX = 0.0, tipY = 0.0, tipZ = 0.0;
 
 //反解的角度
-int ikBase, ikSh, ikEl;
+int ikBase = 90, ikSh = 90, ikEl = 90;
 
 // 一个改变舵机角度的入口，将原本散乱的write函数全部集合于此，改变时只需调用函数
 void setAngles(int b, int s, int e, int g){

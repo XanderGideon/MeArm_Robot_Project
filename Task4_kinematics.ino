@@ -54,3 +54,11 @@ bool solveIK(float x, float y, float z){
   return true;
 }
 
+bool moveToTip(float x, float y, float z){
+  if(!solveIK(x, y, z)) return false;
+  setAngles(ikBase, ikSh, ikEl, grAngle);
+  calcTipPos();
+  return true;
+
+
+}
