@@ -14,6 +14,7 @@
         z  = (baseHeight - penDown) + armLen1*sin(t2) + armLen2*sin(a)
    ===================================================================== */
 
+//正运动学：由三个舵机的夹角计算空间内坐标位置
 void calcTipPos(){
   float t1 = (baseAngle - baseZero) * baseDir * PI / 180.0;
   float t2 = (shAngle - shZero) * shDir * PI / 180.0;
@@ -25,12 +26,13 @@ void calcTipPos(){
   tipZ = baseHeight + armLen1 * sin(t2) + armLen2 * sin(a) - penDown;
 }
 
-//四舍五入，把浮点数角度换算成整数角度
+//四舍五入，把浮点数角度换算成整数角度，逆解后设置新角度使用
 int roundToInt(float t){
   if(t >= 0) return (int)(t + 0.5);
   return (int)(t - 0.5);
 }
 
+//逆运动学：利用笔尖坐标计算舵机角
 bool solveIK(float x, float y, float z){
   float r = sqrt(x * x + y * y) + baseOffset; //解出肩关节到爪缝的水平距离
   float dz = z + penDown - baseHeight; //解爪子到肩关节的竖直距离
@@ -54,11 +56,10 @@ bool solveIK(float x, float y, float z){
   return true;
 }
 
+//让笔尖走到某个位置
 bool moveToTip(float x, float y, float z){
   if(!solveIK(x, y, z)) return false;
-  setAngles(ikBase, ikSh, ikEl, grAngle);
-  calcTipPos();
+  setAngles(ikBase, ikSh, ikEl, grAngle);//更新关节角度并驱动舵机
+  calcTipPos();//通过最新的关节角度进行正解计算最新的位置
   return true;
-
-
 }
