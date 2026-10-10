@@ -14,7 +14,6 @@
       基坐标系 -> 正运动学/逆运动学/记录示教点/驱动舵机(移动笔尖)
 ===================================================================== */
 
-
 //示教点
 int teachX[MAX_POINTS];
 int teachY[MAX_POINTS];
@@ -46,6 +45,9 @@ float nowY = 0; //在该段中绘制到某一步时的y坐标(相对基坐标系
 float lineX1_inpaper = -30.0, lineY1_inpaper = 0.0;
 float lineX2_inpaper = 30.0, lineY2_inpaper = 0.0;
 
+//子任务二绘制三角形，定义三角形在纸面上的坐标
+int shapePoints[8] = {-20,-20,  20,-20,  0,20,  -20,-20};
+
 //把纸面参考系中的笔尖坐标转换回绝对参考系中的笔尖坐标
 //沟通两个坐标系的关键
 float paperToWorldX(float u){return u + paperX;}
@@ -63,30 +65,34 @@ const char* taskName(){
 
 }
 
-//任务五：开始画
-void startDraw(){
-   if(drawState != 0){
+//任务五：准备绘制的前置工作：记录路径点
+void readyToDraw(){
+   if(drawState != 0){// 如果不在待机状态就先不准备
     Serial.println(F("Busy!"));
     return;      
    }   
 
-   if(taskType == 0){//画直线
+   if(taskType == 0){//画直线，路径写死
       pathCount = 2;
       pathX[0] = paperToWorldX(lineX1_inpaper);
       pathX[0] = paperToWorldX(lineY1_inpaper);
       pathX[1] = paperToWorldX(lineX2_inpaper);
       pathX[1] = paperToWorldX(lineY2_inpaper);
    }
-   else if(taskType == 1){//画图形
-
-   }
-   else if(taskType == 2){//画折线
-
-   }
-
-   else{
+   else if(taskType == 1){//画图形，路径写死
+      pathCount = 3;
+      for(int i = 0 ; i < pathCount ; i++){
+         pathX[i] = paperToWorldX(shapePoints[i * 2]);
+         pathY[i] = paperToWorldX(shapePoints[i * 2 + 1]);
+      }
       
+
    }
+   else{//taskType == 2/3 画折线和曲线，路径由摇杆示教决定
+
+   }
+
+ 
 }
 
 void startGohome(){
@@ -134,6 +140,4 @@ void switchTask(){
    Serial.print(F(" ("));
    Serial.print(taskName());
    Serial.println(F(")"));   
-
-
 }

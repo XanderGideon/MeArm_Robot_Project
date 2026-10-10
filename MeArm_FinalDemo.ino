@@ -128,8 +128,8 @@ int ikBase = 90, ikSh = 90, ikEl = 90;
 
 //任务五绘图相关变量
 #define  MAX_POINTS 5  //最多5个示教点
-int taskType = 0; // 0=子任务一， 1=子任务二， 2=子任务四， 3=子任务五
-int drawState = 0; //当前任务进行状态
+int taskType = 0; // 0=直线， 1=图形， 2=折线， 3=曲线
+int drawState = 0; //当前任务进行状态 0=待机 1=抬笔准备去画 2=落笔开始画
 
 // 一个改变舵机角度的入口，将原本散乱的write函数全部集合于此，改变时只需调用函数
 void setAngles(int b, int s, int e, int g){
