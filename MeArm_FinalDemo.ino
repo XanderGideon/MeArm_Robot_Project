@@ -63,7 +63,7 @@ const int recordInterval = 60;     //每60ms记一次，共 200*60ms = 12s > 10s
 
 //任务五： 画图标定区 
 /*1）"小臂"+笔相关*/
-float forearm = 116.6; //实际测算得出轴转轴到爪缝中心距离为116.6mm
+float foreArm = 116.6; //实际测算得出轴转轴到爪缝中心距离为116.6mm
 float penDown = 70.0; //笔尖到爪缝的距离
 float penPress = 1.5; // 笔尖可在纸面上下压
 
@@ -72,18 +72,18 @@ float baseZero = 90.0,  baseDir =  1.0;   // 底座：数学角从 +x 轴逆时�
 
 /* 3) 大臂舵机角度+轴转轴相关查表 */
 #define elbowJointPoints 5
-float shoulderServo[elbowJointPoints]= {95.0, 110.0, 125.0, 140.0, 155.0};
+float shoulderServoAngles[elbowJointPoints]= {95.0, 110.0, 125.0, 140.0, 155.0};
 float elbowJointR[elbowJointPoints] = {39.6,  52.6,  72.6,  90.6,  95.6};
 float elbowJointH[elbowJointPoints] = {114.8, 107.8,  95.8,  75.8,  59.8};
 
-/* 4) 等效大臂长+肩关节位置*/
+/* 4) 等效大臂长+拟合肩关节位置*/
 float shoulderJointR = 20.1;
 float shoulderJointH = 36.7;
 float upperArm = 79.5;
 
 /* 5) 小臂传动比 */
 float elbowServoNode = 90.0;    // 临界点小臂舵机角度
-float forearmAbsAngle = -7.5;    // 90° 时的绝对角
+float foreArmAbsAngle = -7.5;    // 临界点小臂舵机角度90° 时的绝对角
 float armGainDown = 0.883;   // 下段斜率
 float armGainUp = 0.817;   // 上段斜率
 
@@ -137,8 +137,11 @@ void setAngles(int b, int s, int e, int g){
   grAngle = constrain(g, grMin, grMax);
 
   //防止自撞
-
-
+  float upperArmTheta = shoulderServoToAbsAngle(shAngle);
+  float foreArmTheta = forearmServoToAbsAngle(elAngle);
+  if(foreArmTheta - upperArmTheta < foldMin){
+    elAngle = constrain(AbsAngleToforearmServo(foreArmTheta + foldMin), (int)elMin, (int)elMax);
+  }
 
   writeServoAngle(&base, baseAngle);
   writeServoAngle(&shoulder, shAngle);
