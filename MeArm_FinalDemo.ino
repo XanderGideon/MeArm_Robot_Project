@@ -63,7 +63,7 @@ const int recordInterval = 60;     //每60ms记一次，共 200*60ms = 12s > 10s
 
 //任务五： 画图标定区 
 /*1）"小臂"+笔相关*/
-float armlen2 = 116.6; //实际测算得出轴转轴到爪缝中心距离为116.6mm
+float forearm = 116.6; //实际测算得出轴转轴到爪缝中心距离为116.6mm
 float penDown = 70.0; //笔尖到爪缝的距离
 float penPress = 1.5; // 笔尖可在纸面上下压
 
@@ -79,19 +79,28 @@ float elbowJointH[elbowJointPoints] = {114.8, 107.8,  95.8,  75.8,  59.8};
 /* 4) 等效大臂长+肩关节位置*/
 float shoulderJointR = 20.1;
 float shoulderJointH = 36.7;
-float armlen1 = 79.5;
+float upperArm = 79.5;
 
-/* 5) 抬笔高度 单位 mm */
+/* 5) 小臂传动比 */
+float elbowServoNode = 90.0;    // 临界点小臂舵机角度
+float forearmAbsAngle = -7.5;    // 90° 时的绝对角
+float armGainDown = 0.883;   // 下段斜率
+float armGainUp = 0.817;   // 上段斜率
+
+/* 6) 抬笔高度 单位 mm */
 float liftZ  = 12.0;     // 抬笔画线的时候抬多高
 
-/* 6) 纸放在哪：纸面坐标的原点 (0,0) 在机械臂坐标里的位置 也就是纸面中心和底座舵机转轴所在竖线距离为187mm
+/* 7) 纸放在哪：纸面坐标的原点 (0,0) 在机械臂坐标里的位置 也就是纸面中心和底座舵机转轴所在竖线距离为185.0mm
       此处定义为纸面中心在绝对参考系之中的坐标*/
 float paperX = 185.0;
 float paperY = 0.0;
 float paperZ = 0.0;      
 
-/* 7) 爪子相关参数 */
+/* 8) 爪子相关参数 */
 float gripR = 0.0, gripH = 0.0;//爪子距离底座舵机转轴的水平距离与竖直距离
+
+/* 9) 判断能否到达远端的容忍误差 */
+float reachTolerance = 0.6;
 
 // ===================== 正运动学算出来的笔尖位置 =====================
 //此处定义为笔尖在绝对参考系之中的坐标
@@ -106,9 +115,9 @@ int taskType = 0; // 0=直线， 1=图形， 2=折线， 3=曲线
 int drawState = 0; //当前任务进行状态 0=待机 1=抬笔准备去画 2=落笔开始画
 bool paused = false;
 int nowStepTime;
-int connerWaitTime = 500;
-int drawStepTime = 65;
-unsigned long lastStepTime;
+int connerWaitTime = 500; //拐角等待时间加长，完成回差补偿
+int drawStepTime = 80; //每画一步进行等待
+unsigned long lastStepTime; //
 
 
 //精确输出脉冲，实现更精确写舵机角度
