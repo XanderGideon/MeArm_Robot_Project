@@ -10,7 +10,7 @@ const int gripperPin = 6;//夹爪
 
 // 安全角度范围
 int baseMin = 0,   baseMax = 180;//底座
-int shMin   = 85,  shMax   = 155;//大臂
+int shMin   = 80,  shMax   = 155;//大臂
 int elMin   = 25,   elMax   = 155;//小臂
 int grMin   = 80,  grMax   = 180;//爪子
 
@@ -21,7 +21,7 @@ float foldMin = -120.0;
 int baseAngle = 90;
 int shAngle   = 90;
 int elAngle   = 90;
-int grAngle   = 155;//上电即可夹笔
+int grAngle   = 145;//上电即可夹笔
 
 //摇杆引脚
 const int joy1X = A0; // 底座
@@ -40,7 +40,7 @@ int speedLevel = 1;//初始设置为正常速度
 
 //==============回中姿态====================
 //全局都用这个来回中，不再单独写
-int homePose[3] = {90, 80, 95}; // 底座、大臂、小臂
+int homePose[3] = {90, 80, 100}; // 底座、大臂、小臂
 int homeGripperAngle = 80; //回中时爪子张开，方便衔接
 
 //串口接收缓冲区与标志位
@@ -64,11 +64,10 @@ const int recordInterval = 60;     //每60ms记一次，共 200*60ms = 12s > 10s
 //任务五： 画图标定区 
 /*1）"小臂"+笔相关*/
 float armlen2 = 116.6; //实际测算得出轴转轴到爪缝中心距离为116.6mm
-float penDown    = 70.0; //笔尖到爪缝的距离
+float penDown = 70.0; //笔尖到爪缝的距离
 float penPress = 1.5; // 笔尖可在纸面上下压
 
-/* 2) 底座舵机的零度角与方向
-*/
+/* 2) 底座舵机的零度角与方向*/
 float baseZero = 90.0,  baseDir =  1.0;   // 底座：数学角从 +x 轴逆时针量
 
 /* 3) 大臂舵机角度+轴转轴相关查表 */
@@ -91,6 +90,9 @@ float paperX = 185.0;
 float paperY = 0.0;
 float paperZ = 0.0;      
 
+/* 7) 爪子相关参数 */
+float gripR = 0.0, gripH = 0.0;
+
 // ===================== 正运动学算出来的笔尖位置 =====================
 //此处定义为笔尖在绝对参考系之中的坐标
 float tipX = 0.0, tipY = 0.0, tipZ = 0.0;
@@ -98,10 +100,20 @@ float tipX = 0.0, tipY = 0.0, tipZ = 0.0;
 // ===================== 逆运动学算出来的舵机角度 =====================
 int ikBase, ikSh, ikEl;
 
-//任务五绘图相关变量
+//=======================任务五绘图状态相关变量========================
 #define  MAX_POINTS 5  //最多5个示教点
 int taskType = 0; // 0=直线， 1=图形， 2=折线， 3=曲线
 int drawState = 0; //当前任务进行状态 0=待机 1=抬笔准备去画 2=落笔开始画
+bool paused = false;
+
+//精确输出脉冲，实现更精确写舵机角度
+float p = (2400.0 - 544.0) / 180.0;
+void writeServoAngle(Servo *servo, float angle){
+  if(angle < 0.0) angle = 0.0;
+  if(angle > 180.0) angle = 180.0;
+  servo -> writeMicroseconds((int)(544.0 + angle * p));
+}
+
 
 // 一个改变舵机角度的入口，将原本散乱的write函数全部集合于此，改变时只需调用函数
 void setAngles(int b, int s, int e, int g){
@@ -113,10 +125,11 @@ void setAngles(int b, int s, int e, int g){
   //防止自撞
 
 
-  base.write(baseAngle);
-  shoulder.write(shAngle);
-  elbow.write(elAngle);
-  gripper.write(grAngle);
+
+  writeServoAngle(&base, baseAngle);
+  writeServoAngle(&shoulder, shAngle);
+  writeServoAngle(&elbow, elAngle);  
+  writeServoAngle(&gripper, grAngle);
 }
 
 // ===== 按 H / L 设定的整体速度等待 =====

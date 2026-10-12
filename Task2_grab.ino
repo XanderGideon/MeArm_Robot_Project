@@ -16,7 +16,7 @@ int objectPos[3][6] = {//关节空间
   {120, 130, 80,   170, 125, 80},   // 物体 C：抓取点 base=120，放置点 base=170
 };
 
-int gripperCloseAngles[3] = {85, 80, 75};//三个物体不同夹爪夹紧角度
+int gripperCloseAngles[3] = {155, 125, 150};//三个物体不同夹爪夹紧角度
 int gripperOpenAngle = 20;//夹爪张角
 int liftAngle = 25;//大臂抬升高度，设置时大臂角度减去这个值
 
