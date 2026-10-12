@@ -62,24 +62,30 @@ unsigned long lastRecordTime = 0;  //用于非阻塞计时
 const int recordInterval = 60;     //每60ms记一次，共 200*60ms = 12s > 10s
 
 //任务五： 画图标定区 
+/*1）"小臂"+笔相关*/
+float armlen2 = 116.6; //实际测算得出轴转轴到爪缝中心距离为116.6mm
+float penDown    = 70.0; //笔尖到爪缝的距离
+float penPress = 1.5; // 笔尖可在纸面上下压
 
-float penDown    = 70.0;
-
-
-/* 2) 舵机角度和数学角度的换算：
-      baseZero：机械臂朝前方时的底座舵机角度
-      shZero：是大臂与水平面平行时的大臂舵机角度
-      elZero：是小臂与水平面平行时的小臂舵机角度
-      elGain：是实测多次后拟合的传动比
-      大臂：t2 = (shAngle - shZero) * shDir            —— 零位 + 方向
-      小臂：a  = (elAngle - elZero) * elGain           —— 零位 + 连杆传动比（涵盖方向）
+/* 2) 底座舵机的零度角与方向
 */
 float baseZero = 90.0,  baseDir =  1.0;   // 底座：数学角从 +x 轴逆时针量
 
-/* 3) 抬笔高度 单位 mm */
+/* 3) 大臂舵机角度+轴转轴相关查表 */
+#define elbowJointPoints 5
+float shoulderServo[elbowJointPoints]= {95.0, 110.0, 125.0, 140.0, 155.0};
+float elbowJointR[elbowJointPoints] = {39.6,  52.6,  72.6,  90.6,  95.6};
+float elbowJointH[elbowJointPoints] = {114.8, 107.8,  95.8,  75.8,  59.8};
+
+/* 4) 等效大臂长+肩关节位置*/
+float shoulderJointR = 20.1;
+float shoulderJointH = 36.7;
+float armlen1 = 79.5;
+
+/* 5) 抬笔高度 单位 mm */
 float liftZ  = 12.0;     // 抬笔画线的时候抬多高
 
-/* 4) 纸放在哪：纸面坐标的原点 (0,0) 在机械臂坐标里的位置 也就是纸面中心和底座舵机转轴所在竖线距离为187mm
+/* 6) 纸放在哪：纸面坐标的原点 (0,0) 在机械臂坐标里的位置 也就是纸面中心和底座舵机转轴所在竖线距离为187mm
       此处定义为纸面中心在绝对参考系之中的坐标*/
 float paperX = 185.0;
 float paperY = 0.0;
