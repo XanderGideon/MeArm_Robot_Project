@@ -11,7 +11,7 @@ const int gripperPin = 6;//夹爪
 // 安全角度范围
 int baseMin = 0,   baseMax = 180;//底座
 int shMin   = 80,  shMax   = 155;//大臂
-int elMin   = 25,   elMax   = 155;//小臂
+int elMin   = 35,   elMax   = 155;//小臂
 int grMin   = 80,  grMax   = 180;//爪子
 
 //肘部最多能折回來多少
@@ -91,7 +91,7 @@ float paperY = 0.0;
 float paperZ = 0.0;      
 
 /* 7) 爪子相关参数 */
-float gripR = 0.0, gripH = 0.0;
+float gripR = 0.0, gripH = 0.0;//爪子距离底座舵机转轴的水平距离与竖直距离
 
 // ===================== 正运动学算出来的笔尖位置 =====================
 //此处定义为笔尖在绝对参考系之中的坐标
@@ -105,6 +105,11 @@ int ikBase, ikSh, ikEl;
 int taskType = 0; // 0=直线， 1=图形， 2=折线， 3=曲线
 int drawState = 0; //当前任务进行状态 0=待机 1=抬笔准备去画 2=落笔开始画
 bool paused = false;
+int nowStepTime;
+int connerWaitTime = 500;
+int drawStepTime = 65;
+unsigned long lastStepTime;
+
 
 //精确输出脉冲，实现更精确写舵机角度
 float p = (2400.0 - 544.0) / 180.0;
@@ -160,6 +165,7 @@ void updateJoysticks(){
 
   if(moved){
     setAngles(b, s, e, g);
+    calcTipPosition();
   }
 }
 
