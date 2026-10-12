@@ -15,7 +15,7 @@
    ===================================================================== */
 
 bool autoBusy(){
-  return isAutoRunning || isRecording;
+  return isAutoRunning || isRecording || drawState != 0;
 }
 
 // ===================== 任务一 / 二 / 三：按键 1~4 =====================

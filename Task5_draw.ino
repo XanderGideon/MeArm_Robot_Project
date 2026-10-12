@@ -46,7 +46,7 @@ float lineX1_inpaper = -30.0, lineY1_inpaper = 0.0;
 float lineX2_inpaper = 30.0, lineY2_inpaper = 0.0;
 
 //子任务二绘制三角形，定义三角形在纸面上的坐标
-int shapePoints[8] = {-20,-20,  20,-20,  0,20,  -20,-20};
+int shapePoints[8] = {-20,-20,  20,-20,  0,20,  -23,-23};
 
 //把纸面参考系中的笔尖坐标转换回绝对参考系中的笔尖坐标
 //沟通两个坐标系的关键
