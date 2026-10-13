@@ -24,7 +24,6 @@
 //1.示教点
 float teachX[MAX_POINTS];
 float teachY[MAX_POINTS];
-int teachCount = 0;
 
 //2.路径点
 float pathX[MAX_POINTS];
@@ -64,7 +63,7 @@ int shapePoints[8] = {-20,-20,  20,-20,  0,20,  -23,-23};
 
 /*========================第1层：工具层=========================*/
 // 1. 把纸面参考系中的笔尖坐标转换回绝对参考系中的笔尖坐标
-//沟通两个坐标系的关键
+// 沟通两个坐标系的关键
 float paperToWorldX(float u){return u + paperX;}
 float paperToWorldY(float v){return v + paperY;}
 
@@ -200,14 +199,14 @@ void startGoHome(int next){
 void startGoFirstPoint(){
    segIndex = -1;  // -1 表示这一段是从当前位置走到 pathX[0],即第一个点位
    drawState = 2;
-   initSegment();
-   lastStepTime = millis();
+   initSegment(); //对该段进行插值计算
+   lastStepTime = millis(); //重新对齐计时
 }
 
 // 3. 开始画
 void startDraw(){
    if(drawState != 0){
-      Serial.println(F("# 正在画，用按键 7 暂停/继续"));
+      Serial.println(F("# 正在画，用按键 7 暂停/继续 用按键8取消当前状态回待机"));
       return;      
    }
    // 按任务类型先把这一趟的路径点准备好
@@ -239,15 +238,73 @@ void startDraw(){
    //先回待机姿态，再抬着笔去第 1 个点
    isAutoRunning = true;
    paused = false;
+   Serial.print(F("# start drawing, task="));
+   Serial.print(taskName());
+   Serial.print(F(" points="));
+   Serial.println(pathCount);
    startGoHome(2);
 }
 
+/*========================第4层：状态机层=========================*/
+//每轮 loop() 走一小步。非阻塞状态机
+void tickDraw(){
+   if(drawState == 0 || paused) return; //待机或者暂停
+   if(millis() - lastStepTime < nowStepTime) return; //时间间隔没走完
+   lastStepTime = millis();
+   nowStepTime = drawStepTime; //复位节拍
 
+   if(drawState = 1){
+      homeStep++;
+      if(homeStep >= homeSteps){
+         setAngles(homeB, homeS, homeE, homeG);
+         calcTipPosition();
+         if(afterHome = 2){
+            startGoFirstPoint();
+         } else {
+            drawState = 0;
+            isAutoRunning = false;
+            Serial.println(F("# home, ready"));
+         }
+         return;
+      }
+      float b = StartB + (homeB - StartB) * (homeStep / homeSteps);
+      float s = StartB + (homeB - StartB) * (homeStep / homeSteps);
+      float e = StartB + (homeB - StartB) * (homeStep / homeSteps);
+      setAngles(b, s, e, grAngle);
+      return;
+   }
 
+   if(drawState = 2){
+      segNowStep++;
+      if(segNowStep > segTotalSteps){
+         moveTipTo(pathX[0], pathY[0], paperZ - penPress);
+         segIndex = 0;
+         initSegment();
+         drawState = 3;
+         nowStepTime = drawStepTime + connerWaitTime;
+         return;
+      }
+      calcStepPointXY();
+      moveTipTo(nowX, nowY, paperZ + liftZ);
+      return;
+   }
 
-
-
-
-
-
-
+   if(drawState = 3){
+      segNowStep++;
+      if(segNowStep > segTotalSteps){
+         segIndex++;
+         if(segIndex > pathCount - 2){
+            Serial.print(F("# drawing done"));
+            startGoHome(0);
+            nowStepTime = drawStepTime + connerWaitTime;
+            return;
+         }
+         initSegment();
+         nowStepTime = drawStepTime + connerWaitTime;
+         return;
+      }
+      calcStepPointXY();
+      moveTipTo(nowX, nowY, paperZ - penPress);
+      return;
+   }
+}

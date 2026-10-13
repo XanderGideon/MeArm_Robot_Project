@@ -118,7 +118,7 @@ int nowStepTime = 80;
 int connerWaitTime = 500; //拐角等待时间加长，完成回差补偿
 int drawStepTime = 80; //每画一步进行等待
 unsigned long lastStepTime = 0; //画图状态机的节拍(按键取消画图状态时需要复位)
-
+int teachCount = 0;
 
 //精确输出脉冲，实现更精确写舵机角度
 float p = (2400.0 - 544.0) / 180.0;
@@ -228,6 +228,8 @@ void loop() {
   // 只有在没有自动任务时，摇杆才控制舵机
   //录制时必须用摇杆,故而不判断isRecording
   if(!isAutoRunning && drawState == 0) updateJoysticks();
+
+  tickDraw();
 
   delay(motorSpeed); // 小延时，保证摇杆响应流畅
 }

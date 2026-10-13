@@ -170,10 +170,8 @@ bool solveIK(float x, float y, float z){
 }
 
 /*========================第4层：实际驱动层=======================*/
-//判断逆解是否成功，写舵机
-bool moveTipTo(float x, float y, float z){
-  if(!solveIK(x,y,z)) return false;
+//写舵机
+void moveTipTo(float x, float y, float z){
   setAngles(ikBase, ikSh, ikEl, grAngle);
   calcTipPosition();
-  return true;
 }

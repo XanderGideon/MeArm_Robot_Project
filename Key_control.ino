@@ -8,9 +8,9 @@
      短按 3 = 回放
      短按 4 = 回中
      长按 1~4 无效
-     短按 5 = 记一个示教点（最多 5 个）      长按 5 = 清空示教点
-     短按 6 = 开始画 / 正在画时再按一次 = 停  长按 6 = 换子任务
-     短按 7 = 暂停 / 继续                 
+     短按 5 = 记一个示教点（最多 5 个）     长按 5 = 清空示教点
+     短按 6 = 开始画                      长按 6 = 换子任务
+     短按 7 = 暂停 / 继续                 长按 7 = 画图形           
      短按 8 = 取消（停住回待机）     
    ===================================================================== */
 
@@ -83,27 +83,102 @@ void doKeyTask(int n){
     clearSerial();
     return;
   }
-
-  Serial.println(F("# 按键1..4 的长按没有定义(长按只用在按键 5~8)"));
 }
 
-void doTask5(int n , bool isLong){
-  //代码
+void doKeyDraw(int n , bool isLong){
+  // ==================== 按键 5：示教点 ====================
+  if(n == 5){
+    if(isAutoRunning || isRecording){
+      Serial.println(F("Busy!"));
+      return;      
+    }
+    recordTeachPoints();
+    return;
+  }
+
+  if(n == 5 && isLong){
+    if(drawState != 0){
+      Serial.println(F("# 正在动，先按 8 取消"));
+      return;     
+    }
+    teachCount = 0;
+    Serial.println(F("# 示教点已清空"));
+    return;
+  }
+
+  // ==================== 按键 6：开始 / 换任务 ====================
+  if(n == 6){
+    if(isAutoRunning && isRecording){
+      Serial.println(F("Busy!"));
+      return;      
+    }
+    if(drawState != 0){
+      Serial.println(F("# 正在画，用按键 7 暂停/继续，按键 8 取消"));
+      return;   
+    }
+    startDraw();
+    return;
+  }
+
+  if(n == 6 && isLong){
+    switchTask();
+    return;
+  }
+
+ // ==================== 按键 7：暂停 / 继续 ====================
+  // 短按：暂停时抬笔，继续时放笔，从断点接着画
+  if(n == 7){
+    if(drawState != 3){
+      Serial.println(F("# 只在画线时能暂停/继续"));
+      return;      
+    }
+    if(!paused){
+      // ---- 暂停：原地竖直抬笔 ----
+      moveTipTo(tipX, tipY, paperZ + liftZ);
+      paused = true;
+      Serial.println(F("# PAUSE (笔已抬起)"));
+    }
+    else{
+      // ---- 继续：原地放笔，从断点接着画 ----
+      moveTipTo(tipX, tipY, paperZ - penPress);
+      paused = false;
+      lastStepTime = millis();// 重置计时
+      Serial.println(F("# CONTINUE (从原处继续)"));
+    }
+    return;
+  }
+
+  if(n == 7 && isLong){
+    if(drawState == 0 && (isAutoRunning || isRecording)){
+      Serial.println(F("Busy!"));
+      return;
+    }
+    taskType = 1;
+    startDraw();
+    return;
+  }
+
+ // ==================== 按键 8:取消当前状态，回待机 ====================
+  if(n == 8){
+    if(drawState == 0) return;
+    paused = false;
+    Serial.println(F("# CANCEL"));
+    startGoHome(0);
+    return;
+  }
+
 }
-
-
-
 
 // ===================== 按键总入口 =====================
 /* n = 1..8，isLong = 是不是长按（遥控板任意按键被按住超过 0.8 秒）
    1~4 是任务一/二/三，5~8 是任务五，直接按号码分发，没有工作模式。
-   长按只用在按键 5~8 */
+   长按只用在按键 5~7 */
 void doKey(int n, bool isLong){
   if (n < 1 || n > 8) return;
   if(n <= 4){
     doKeyTask(n);
   } else {
-    //任务五按键代码
+    doKeyDraw(n, isLong);
   }
 }
 
