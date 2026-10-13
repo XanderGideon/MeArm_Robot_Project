@@ -49,6 +49,12 @@ float segEndY = 0; //这一段绘制结束时的终点x(相对基坐标系)
 float nowX = 0; //在该段中绘制到某一步时的x坐标(相对基坐标系)
 float nowY = 0; //在该段中绘制到某一步时的y坐标(相对基坐标系)
 
+//5.回待机状态
+int afterHome = 0; //回完待机以后去哪个状态
+float StartB, StartS, StartE; //从这三个初始角度开始回待机
+float homeB = 90, homeS = 110, homeE = 85, homeG = 155; //标准待机角度
+int homeStep = 0, homeSteps = 30;
+
 //子任务一直线的首尾点坐标规定(相对于纸面坐标系)
 float lineX1_inpaper = 0.0, lineY1_inpaper = -30.0;
 float lineX2_inpaper = 0.0, lineY2_inpaper = 30.0;
@@ -176,33 +182,69 @@ void calcStepPointXY(){
    }
 }
 
-//任务五：准备绘制的前置工作：记录路径点
-void readyToDraw(){
-   if(drawState != 0){// 如果不在待机状态就先不准备
-    Serial.println(F("Busy!"));
-    return;      
-   }   
+/*========================第3层：触发层=========================*/
+// 1. 回待机状态(next = 回完舵机以后去哪 0=保持待机 2=去画第一个点)
+void startGoHome(int next){
+   drawState = 1;
+   StartB = baseAngle;
+   StartE = elAngle;
+   StartS = shAngle;
+   homeStep = 0;
+   homeSteps = 30;
+   afterHome = next;
+   isAutoRunning = true;
+   lastStepTime = millis();
+}
 
-   if(taskType == 0){//画直线，路径写死
+// 2. 去第一个点位
+void startGoFirstPoint(){
+   segIndex = -1;  // -1 表示这一段是从当前位置走到 pathX[0],即第一个点位
+   drawState = 2;
+   initSegment();
+   lastStepTime = millis();
+}
+
+// 3. 开始画
+void startDraw(){
+   if(drawState != 0){
+      Serial.println(F("# 正在画，用按键 7 暂停/继续"));
+      return;      
+   }
+   // 按任务类型先把这一趟的路径点准备好
+   if(taskType == 0){
       pathCount = 2;
       pathX[0] = paperToWorldX(lineX1_inpaper);
-      pathX[0] = paperToWorldX(lineY1_inpaper);
+      pathY[0] = paperToWorldY(lineY1_inpaper);
       pathX[1] = paperToWorldX(lineX2_inpaper);
-      pathX[1] = paperToWorldX(lineY2_inpaper);
+      pathY[1] = paperToWorldY(lineY2_inpaper);
    }
-   else if(taskType == 1){//画图形，路径写死
-      pathCount = 3;
+   else if(taskType = 1){
+      pathCount = 4;
       for(int i = 0 ; i < pathCount ; i++){
          pathX[i] = paperToWorldX(shapePoints[i * 2]);
-         pathY[i] = paperToWorldX(shapePoints[i * 2 + 1]);
+         pathY[i] = paperToWorldY(shapePoints[i * 2 + 1]);
       }
-      
-
    }
-   else{//taskType == 2/3 画折线和曲线，路径由摇杆示教决定
-
+   else{
+      if(teachCount < 2){
+         Serial.println(F("# 示教点不够,先短按按键5 记点"));
+         return;
+      }
+      pathCount = teachCount;
+      for(int i = 0 ; i < pathCount ; i++){
+         pathX[i] = teachX[i];
+         pathY[i] = teachY[i];
+      }
    }
+   //先回待机姿态，再抬着笔去第 1 个点
+   isAutoRunning = true;
+   paused = false;
+   startGoHome(2);
 }
+
+
+
+
 
 
 

@@ -114,7 +114,7 @@ int ikBase, ikSh, ikEl;
 int taskType = 0; // 0=直线， 1=图形， 2=折线， 3=曲线
 int drawState = 0; //当前任务进行状态 0=正在待机 1=回到待机状态 2=抬笔去第一个点 3=落笔开始画
 bool paused = false;
-int nowStepTime;
+int nowStepTime = 80;
 int connerWaitTime = 500; //拐角等待时间加长，完成回差补偿
 int drawStepTime = 80; //每画一步进行等待
 unsigned long lastStepTime = 0; //画图状态机的节拍(按键取消画图状态时需要复位)
