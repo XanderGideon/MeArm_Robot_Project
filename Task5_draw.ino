@@ -22,13 +22,13 @@
 
 /*========================第0层：相关变量定义=========================*/
 //1.示教点
-int teachX[MAX_POINTS];
-int teachY[MAX_POINTS];
+float teachX[MAX_POINTS];
+float teachY[MAX_POINTS];
 int teachCount = 0;
 
 //2.路径点
-int pathX[MAX_POINTS];
-int pathY[MAX_POINTS];
+float pathX[MAX_POINTS];
+float pathY[MAX_POINTS];
 int pathCount = 0;
 
 //3.配置绘图待机状态
@@ -138,9 +138,11 @@ void initSegment(){
    segNowStep = 0;
 }
 
-// 2. 准备曲线插值，采用Catmull-Rom样条曲线进行插值
-void initSpline(float p0, float p1, float p2, float p3, float t){
-   float a = 2.0 * p0;
+// 2. 准备曲线插值，采用Catmull-Rom样条曲线进行插值，用于子任务五画曲线，t的范围在0~1
+/*返回值的定义为由四个控制点 p0、p1、p2、p3 定义的 Catmull-Rom 样条曲线，在参数 t 处的插值结果
+  核心：输入 4 个控制点 + 进度 t，输出该点的插值坐标*/    
+float initSplineCurve(float p0, float p1, float p2, float p3, float t){
+   float a = 2.0 * p1;
    float b = -p0 + p2;
    float c = 2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3;
    float d = -p0 + 3.0*p1 - 3.0*p2 + p3;
@@ -150,7 +152,29 @@ void initSpline(float p0, float p1, float p2, float p3, float t){
    return 0.5 * (a + b*t1 + c*t2 + d*t3);
 }
 
+// 3. 计算当前这一步的笔尖位置
+//    核心：用一个函数处理 4 种任务类型，通过 taskType 区分插值算法
+void calcStepPointXY(){
+   float t = (float)segNowStep / (float)segTotalSteps; //比例（画线进度）0~1
+   
+   if(segIndex >= 0 && taskType == 3){ //曲线插值
+      int i = segIndex;
+      // 曲线：用前后各一个点做样条，首尾没有点就拿自己代替
+      // 路径点： P0  P1  P2  P3  P4
+      // 索引：   0   1   2   3   4
+      float p0x = (i == 0)? pathX[0] : pathX[i - 1];
+      float p0y = (i == 0)? pathY[0] : pathY[i - 1];
+      float p3x = (i + 2 <= pathCount - 1)? pathX[i + 2] : pathX[pathCount - 1];
+      float p3y = (i + 2 <= pathCount - 1)? pathY[i + 2] : pathY[pathCount - 1];
 
+      nowX = initSplineCurve(p0x, pathX[i], pathX[i + 1], p3x, t);
+      nowY = initSplineCurve(p0y, pathY[i], pathY[i + 1], p3y, t);
+   } 
+   else { //直线、图形、三角形：线性插值
+      nowX = segStartX + (segEndX - segStartX) * t;
+      nowY = segStartY + (segEndY - segStartY) * t;
+   }
+}
 
 //任务五：准备绘制的前置工作：记录路径点
 void readyToDraw(){
