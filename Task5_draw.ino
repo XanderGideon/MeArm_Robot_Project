@@ -123,7 +123,7 @@ void initSegment(){
       segEndX = pathX[0];
       segEndY = pathY[0];
    }
-   else{ //常规插值
+   else{ //常规线段插值
       segStartX = pathX[segIndex];
       segStartY = pathX[segIndex];
       segEndX = pathX[segIndex + 1];
@@ -138,7 +138,19 @@ void initSegment(){
    segNowStep = 0;
 }
 
-// 2. 
+// 2. 准备曲线插值，采用Catmull-Rom样条曲线进行插值
+void initSpline(float p0, float p1, float p2, float p3, float t){
+   float a = 2.0 * p0;
+   float b = -p0 + p2;
+   float c = 2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3;
+   float d = -p0 + 3.0*p1 - 3.0*p2 + p3;
+   float t1 = t;
+   float t2 = t * t;
+   float t3 = t * t * t;
+   return 0.5 * (a + b*t1 + c*t2 + d*t3);
+}
+
+
 
 //任务五：准备绘制的前置工作：记录路径点
 void readyToDraw(){
