@@ -2,9 +2,9 @@
    任务五：轨迹绘制（示教 / 直线 / 图形 / 折线 / 曲线）
    ---------------------------------------------------------------------
     按键安排：
-     短按 5 = 记一个示教点（最多 5 个）      长按 5 = 清空示教点
+     短按 5 = 记一个示教点（最多 5 个）       长按 5 = 清空示教点
      短按 6 = 开始画 / 正在画时再按一次 = 停  长按 6 = 换子任务
-     短按 7 = 暂停 / 继续                 短按 8 = 取消（停住回待机）          
+     短按 7 = 暂停 / 继续                    短按 8 = 取消（停住回待机）          
 
     坐标系设置：
       设置基坐标系和纸面坐标系，好处是增加两个函数，大大减小了纸面挪移时修改坐标代码的难度，只需要更改paperX/paperY
@@ -12,26 +12,34 @@
     坐标系分工：
       纸面坐标系 -> 设置直线端点/设置图形端点
       基坐标系 -> 正运动学/逆运动学/记录示教点/驱动舵机(移动笔尖)
+   ----------------------------------------------------------------------
+    绘图状态机(drawstate)
+      0 = 待机（遥杆可以动，可以示教）
+      1 = 回待机状态（线性插值走回去）
+      2 = 抬笔去第一个点
+      3 = 落笔画线中
 ===================================================================== */
 
-//示教点
+/*========================第0层：相关变量定义=========================*/
+//1.示教点
 int teachX[MAX_POINTS];
 int teachY[MAX_POINTS];
 int teachCount = 0;
 
-//路径点
+//2.路径点
 int pathX[MAX_POINTS];
 int pathY[MAX_POINTS];
 int pathCount = 0;
 
-//配置绘图待机状态
-int homeBase = 90, homeSh = 110, homeEl = 85, homeGr = 70;
+//3.配置绘图待机状态
+int homeBase = 90, homeSh = 110, homeEl = 85, homeGr = 155;
 
-//绘图相关
-//根据子任务不同，设置绘制不同的段数;根据插值比例，设置绘制每段所需的步数
+//4.绘图相关
+//根据子任务不同，设置不同的绘制段数
+//根据插值比例，设置绘制每段所需的步数
 int segIndex = 0; //本次绘制画到第几段
-int segTotalSteps = 0; //绘制本段需要多少步
-int segCurrentStep = 0; //本段绘制到第几步
+int segTotalSteps = 0; //绘制本段需要多少步，设定每一小步走1.5mm
+int segNowStep = 0; //本段绘制到第几步
 
 float segStartX = 0; //这一段绘制开始时的起点x(相对基坐标系)
 float segStartY = 0; //这一段绘制开始时的起点y(相对基坐标系)
@@ -42,27 +50,91 @@ float nowX = 0; //在该段中绘制到某一步时的x坐标(相对基坐标系
 float nowY = 0; //在该段中绘制到某一步时的y坐标(相对基坐标系)
 
 //子任务一直线的首尾点坐标规定(相对于纸面坐标系)
-float lineX1_inpaper = -30.0, lineY1_inpaper = 0.0;
-float lineX2_inpaper = 30.0, lineY2_inpaper = 0.0;
+float lineX1_inpaper = 0.0, lineY1_inpaper = -30.0;
+float lineX2_inpaper = 0.0, lineY2_inpaper = 30.0;
 
 //子任务二绘制三角形，定义三角形在纸面上的坐标
 int shapePoints[8] = {-20,-20,  20,-20,  0,20,  -23,-23};
 
-//把纸面参考系中的笔尖坐标转换回绝对参考系中的笔尖坐标
+/*========================第1层：工具层=========================*/
+// 1. 把纸面参考系中的笔尖坐标转换回绝对参考系中的笔尖坐标
 //沟通两个坐标系的关键
 float paperToWorldX(float u){return u + paperX;}
 float paperToWorldY(float v){return v + paperY;}
 
-void initSegment(){
+// 2. 当前子任务叫什么名字
+const char* taskName(){
+   if(taskType == 0) {return "line";}//子任务一
+   if(taskType == 1) {return "shape";}//子任务二
+   if(taskType == 2) {return "polyline";}//子任务四
+   return "curve";//子任务五
+
 }
 
-//当前子任务叫什么名字
-const char* taskName(){
-   if(taskType == 0) {return "line";}
-   if(taskType == 1) {return "shape";}
-   if(taskType == 2) {return "polyline";}
-   return "curve";
+// 3. 记一个示教点
+void recordTeachPoints(){
+   if(drawState != 0){//在绘制，拒绝记录
+    Serial.println(F("Busy!"));
+    return;      
+   }
 
+   if(teachCount >= MAX_POINTS){//记满了，提醒清零
+    Serial.println(F("# 已经记满 5 个点了(长按按键5 清空)"));
+    return;      
+   }
+   calcTipPosition();//过了上面两关，计算绝对坐标
+   teachX[teachCount] = tipX;
+   teachY[teachCount] = tipY;
+   teachCount++;
+
+   Serial.print(F("# P"));
+   Serial.print(teachCount);
+   Serial.print(F(" u="));
+   Serial.print(tipX - paperX, 1);
+   Serial.print(F(" v="));
+   Serial.print(tipY - paperY, 1);
+   Serial.print(F(" x="));
+   Serial.print(tipX, 1);
+   Serial.print(F(" y="));
+   Serial.println(tipY, 1);
+}
+
+//4.切换子任务
+void switchTask(){
+   if(drawState != 0){
+   Serial.println(F("# 正在动，先取消再换任务"));
+   return;
+   }
+   taskType++;
+   if(taskType > 3) taskType = 0;
+   Serial.print(F("# 任务类型 = "));
+   Serial.print(taskType);
+   Serial.print(F(" ("));
+   Serial.print(taskName());
+   Serial.println(F(")"));   
+}
+
+/*========================第2层：插值准备层=========================*/
+void initSegment(){
+   if(segIndex < 0){ //此时准备的是从待机状态走到第一个点的插值
+      segStartX = tipX;
+      segStartY = tipY;
+      segEndX = pathX[0];
+      segEndY = pathY[0];
+   }
+   else{ //常规插值
+      segStartX = pathX[segIndex];
+      segStartY = pathX[segIndex];
+      segEndX = pathX[segIndex + 1];
+      segEndY = pathY[segIndex + 1];      
+   }
+
+   float dx = segEndX - segStartX;
+   float dy = segEndY - segStartY;
+   float len = sqrt(dx*dx + dy*dy);//计算该段的长度
+
+   segTotalSteps = (int)(len / 1.5);//计算要走几步
+   segNowStep = 0;
 }
 
 //任务五：准备绘制的前置工作：记录路径点
@@ -91,53 +163,10 @@ void readyToDraw(){
    else{//taskType == 2/3 画折线和曲线，路径由摇杆示教决定
 
    }
-
- 
 }
 
-void startGohome(){
 
-}
 
-//记一个示教点
-void recordTeachPoints(){
-   if(drawState != 0){
-    Serial.println(F("Busy!"));
-    return;      
-   }
 
-   if(teachCount >= MAX_POINTS){
-    Serial.println(F("# 已经记满 5 个点了(长按按键5 清空)"));
-    return;      
-   }
-   calcTipPosition();
-   teachX[teachCount] = tipX;
-   teachY[teachCount] = tipY;
-   teachCount++;
 
-   Serial.print(F("# P"));
-   Serial.print(teachCount);
-   Serial.print(F(" u="));
-   Serial.print(tipX - paperX, 1);
-   Serial.print(F(" v="));
-   Serial.print(tipY - paperY, 1);
-   Serial.print(F(" x="));
-   Serial.print(tipX, 1);
-   Serial.print(F(" y="));
-   Serial.println(tipY, 1);
-}
 
-//切换任务状态
-void switchTask(){
-   if(drawState != 0){
-   Serial.println(F("# 正在动，先取消再换任务"));
-   return;
-   }
-   taskType++;
-   if(taskType > 3) taskType = 0;
-   Serial.print(F("# 任务类型 = "));
-   Serial.print(taskType);
-   Serial.print(F(" ("));
-   Serial.print(taskName());
-   Serial.println(F(")"));   
-}

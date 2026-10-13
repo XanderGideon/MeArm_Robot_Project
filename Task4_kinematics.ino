@@ -41,7 +41,7 @@
 */
 
 /*========================第1层：查表工具层========================*/
-/*1) 输入大臂舵机角 y,返回肘转轴离底座转轴的水平距离 er*/
+/*1) 输入大臂舵机角 y，进行查表与插值计算，返回肘转轴离底座转轴的水平距离 er*/
 float shoulderServoToElbowR(float ShAngle){
   if(ShAngle < shoulderServoAngles[0]) ShAngle = shoulderServoAngles[0];
   if(ShAngle > shoulderServoAngles[4]) ShAngle = shoulderServoAngles[4];
@@ -54,7 +54,7 @@ float shoulderServoToElbowR(float ShAngle){
   }
 }
 
-/*2) 输入大臂舵机角 y，返回肘转轴离桌面的高度 eh*/
+/*2) 输入大臂舵机角 y，进行查表与插值计算，返回肘转轴离桌面的高度 eh*/
 float shoulderServoToElbowH(float ShAngle){
   if(ShAngle < shoulderServoAngles[0]) ShAngle = shoulderServoAngles[0];
   if(ShAngle > shoulderServoAngles[4]) ShAngle = shoulderServoAngles[4];
@@ -67,7 +67,7 @@ float shoulderServoToElbowH(float ShAngle){
   }
 }
 
-/*3) 输入大臂角 y 和目标点 (r, h)，返回肘到目标点的直线距离h*/
+/*3) 输入大臂角 y （利用上面两个函数算肘关节位置）和目标点 (r, h)，返回肘到目标点的直线距离h*/
 float elbowDistanceTo(float ShAngle, float r, float h){
   float dr = r - shoulderServoToElbowR(ShAngle);
   float dh = h - shoulderServoToElbowH(ShAngle);
@@ -90,15 +90,16 @@ float AbsAngleToforearmServo(float AbsAngle){
   return elbowServoNode + deltaAlpha / armGainUp;
 }
 
-/*3) 输入大臂舵机角度，返回等效大臂绝对角*/
-float shoulderServoToAbsAngle(float ShAngle){
+/*3) 输入大臂舵机角度，返回等效大臂绝对角(只用于防自撞的判断)*/
+float upperArmServoToAbsAngle(float ShAngle){
   float ddr = shoulderServoToElbowR(ShAngle) - shoulderJointR;
   float ddh = shoulderServoToElbowH(ShAngle) - shoulderJointH;
   return atan2(ddh, ddr) / PI * 180.0 ;
 }
 
 /*========================第3层：运动学层=======================*/
-/*1) 正运动学：根据三个舵机当前角度，算出笔尖坐标 (tipX, tipY, tipZ)*/
+/*1)  正运动学：根据三个舵机当前角度，算出笔尖坐标 (tipX, tipY, tipZ)
+      用的是几何拼接*/
 void calcTipPosition(){
   // 1. 底座舵机角 → 数学方位角
   float t = (baseAngle - baseZero) * baseDir / 180.0 * PI;

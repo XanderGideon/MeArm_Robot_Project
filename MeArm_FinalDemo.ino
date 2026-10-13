@@ -11,7 +11,7 @@ const int gripperPin = 6;//夹爪
 // 安全角度范围
 int baseMin = 0,   baseMax = 180;//底座
 int shMin   = 80,  shMax   = 155;//大臂
-int elMin   = 35,   elMax   = 155;//小臂
+int elMin   = 35,   elMax   = 135;//小臂
 int grMin   = 80,  grMax   = 180;//爪子
 
 //肘部最多能折回來多少
@@ -79,7 +79,7 @@ float elbowJointH[elbowJointPoints] = {114.8, 107.8,  95.8,  75.8,  59.8};
 /* 4) 等效大臂长+拟合肩关节位置*/
 float shoulderJointR = 20.1;
 float shoulderJointH = 36.7;
-float upperArm = 79.5;
+//float upperArm = 79.5;
 
 /* 5) 小臂传动比 */
 float elbowServoNode = 90.0;    // 临界点小臂舵机角度
@@ -99,7 +99,7 @@ float paperZ = 0.0;
 /* 8) 爪子相关参数 */
 float gripR = 0.0, gripH = 0.0;//爪子距离底座舵机转轴的水平距离与竖直距离
 
-/* 9) 判断能否到达远端的容忍误差 */
+/* 9) 判断能否到达远端的容忍误差，残差超过这个容忍误差，返回false */
 float reachTolerance = 0.6;
 
 // ===================== 正运动学算出来的笔尖位置 =====================
@@ -112,12 +112,12 @@ int ikBase, ikSh, ikEl;
 //=======================任务五绘图状态相关变量========================
 #define  MAX_POINTS 5  //最多5个示教点
 int taskType = 0; // 0=直线， 1=图形， 2=折线， 3=曲线
-int drawState = 0; //当前任务进行状态 0=待机 1=抬笔准备去画 2=落笔开始画
+int drawState = 0; //当前任务进行状态 0=正在待机 1=回到待机状态 2=抬笔去第一个点 3=落笔开始画
 bool paused = false;
 int nowStepTime;
 int connerWaitTime = 500; //拐角等待时间加长，完成回差补偿
 int drawStepTime = 80; //每画一步进行等待
-unsigned long lastStepTime; //
+unsigned long lastStepTime = 0; //画图状态机的节拍(按键取消画图状态时需要复位)
 
 
 //精确输出脉冲，实现更精确写舵机角度
@@ -125,9 +125,8 @@ float p = (2400.0 - 544.0) / 180.0;
 void writeServoAngle(Servo *servo, float angle){
   if(angle < 0.0) angle = 0.0;
   if(angle > 180.0) angle = 180.0;
-  servo -> writeMicroseconds((int)(544.0 + angle * p));
+  servo -> writeMicroseconds((int)(544.0 + angle * p + 0.5));//加0.5防止int四舍五入截断
 }
-
 
 // 一个改变舵机角度的入口，将原本散乱的write函数全部集合于此，改变时只需调用函数
 void setAngles(int b, int s, int e, int g){
@@ -136,8 +135,8 @@ void setAngles(int b, int s, int e, int g){
   elAngle = constrain(e, elMin, elMax);
   grAngle = constrain(g, grMin, grMax);
 
-  //防止自撞
-  float upperArmTheta = shoulderServoToAbsAngle(shAngle);
+  //防止自撞(计算小臂绝对角与大臂虚拟)
+  float upperArmTheta = upperArmServoToAbsAngle(shAngle);
   float foreArmTheta = forearmServoToAbsAngle(elAngle);
   if(foreArmTheta - upperArmTheta < foldMin){
     elAngle = constrain(AbsAngleToforearmServo(foreArmTheta + foldMin), (int)elMin, (int)elMax);
