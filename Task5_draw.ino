@@ -115,6 +115,7 @@ void switchTask(){
 }
 
 /*========================第2层：插值准备层=========================*/
+// 1. 准备当前线段插值，算出起点、终点，共有几步
 void initSegment(){
    if(segIndex < 0){ //此时准备的是从待机状态走到第一个点的插值
       segStartX = tipX;
@@ -136,6 +137,8 @@ void initSegment(){
    segTotalSteps = (int)(len / 1.5);//计算要走几步
    segNowStep = 0;
 }
+
+// 2. 
 
 //任务五：准备绘制的前置工作：记录路径点
 void readyToDraw(){

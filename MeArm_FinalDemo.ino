@@ -33,9 +33,9 @@ const int joy2Y = A2; // 夹爪
 const int joyDeadzone = 60;
 
 //===============速度控制=================
-int motorSpeed = 20;//正常速度
+int motorSpeed = 30;//正常速度
 const int speedCount = 3;
-const int joyDelayTable[speedCount] = {10, 20, 40};//三个摇杆延时档位
+const int joyDelayTable[speedCount] = {10, 30, 50};//三个摇杆延时档位
 int speedLevel = 1;//初始设置为正常速度
 
 //==============回中姿态====================
@@ -149,7 +149,7 @@ void setAngles(int b, int s, int e, int g){
 }
 
 // ===== 按 H / L 设定的整体速度等待 =====
-// motorSpeed = 20 是正常速度，10 是快，30 是慢；自动动作也跟着这个速度变
+// motorSpeed = 30 是正常速度，10 是快，50 是慢；自动动作也跟着这个速度变
 void waitMs(int baseMs){
   delay(baseMs);
 }
