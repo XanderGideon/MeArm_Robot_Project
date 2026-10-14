@@ -61,7 +61,7 @@ float lineX2_inpaper = 0.0, lineY2_inpaper = 30.0;
 //子任务二绘制三角形，定义三角形在纸面上的坐标
 int shapePoints[8] = {-20,-20,  20,-20,  0,20,  -23,-23};
 
-//逆解后无法到达的点位计数
+//绘图中无法到达的点位计数
 int missCount = 0;
 
 /*========================第1层：工具层=========================*/
@@ -241,6 +241,7 @@ void startDraw(){
    //先回待机姿态，再抬着笔去第 1 个点
    isAutoRunning = true;
    paused = false;
+   missCount = 0;
    Serial.print(F("# start drawing, task="));
    Serial.print(taskName());
    Serial.print(F(" points="));
@@ -253,10 +254,10 @@ void startDraw(){
 void tickDraw(){
    if(drawState == 0 || paused) return; //待机或者暂停
    if(millis() - lastStepTime < nowStepTime) return; //时间间隔没走完
-   lastStepTime = millis();
+   lastStepTime = millis(); //实时记录时间
    nowStepTime = drawStepTime; //复位节拍
 
-   if(drawState == 1){
+   if(drawState == 1){//回待机
       homeStep++;
       if(homeStep >= homeSteps){
          setAngles(homeB, homeS, homeE, homeG);
@@ -288,7 +289,7 @@ void tickDraw(){
          return;
       }
       calcStepPointXY();
-      moveTipTo(nowX, nowY, paperZ + liftZ);
+      if(!moveTipTo(nowX, nowY, paperZ + liftZ)) missCount++;
       return;
    }
 
@@ -297,9 +298,10 @@ void tickDraw(){
       if(segNowStep > segTotalSteps){
          segIndex++;
          if(segIndex > pathCount - 2){
-            Serial.print(F("# drawing done"));
+            Serial.print(F("# drawing done  misscount = "));
+            Serial.println(missCount);
             startGoHome(0);
-            nowStepTime = drawStepTime + connerWaitTime;
+            nowStepTime = drawStepTime + connerWaitTime; //笔尖停一下再起来
             return;
          }
          initSegment();
@@ -307,7 +309,7 @@ void tickDraw(){
          return;
       }
       calcStepPointXY();
-      moveTipTo(nowX, nowY, paperZ - penPress);
+      if(!moveTipTo(nowX, nowY, paperZ - penPress)) missCount++;
       return;
    }
 }

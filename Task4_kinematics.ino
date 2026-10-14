@@ -170,7 +170,7 @@ bool solveIK(float x, float y, float z){
 }
 
 /*========================第4层：实际驱动层=======================*/
-//写舵机
+//写舵机,并作为一个判断标志
 bool moveTipTo(float x, float y, float z){
   if(!solveIK(x, y, z)) return false;
   setAngles(ikBase, ikSh, ikEl, grAngle);
