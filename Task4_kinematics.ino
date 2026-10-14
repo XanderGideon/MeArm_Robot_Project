@@ -47,7 +47,7 @@ float shoulderServoToElbowR(float ShAngle){
   if(ShAngle > shoulderServoAngles[4]) ShAngle = shoulderServoAngles[4];
   for(int i = 0 ; i < elbowJointPoints - 1 ; i++){
     if(ShAngle <= shoulderServoAngles[i + 1]){
-      float k = (shAngle - shoulderServoAngles[i]) / (shoulderServoAngles[i + 1] - shoulderServoAngles[i]);
+      float k = (ShAngle - shoulderServoAngles[i]) / (shoulderServoAngles[i + 1] - shoulderServoAngles[i]);
       float er = elbowJointR[i] + (elbowJointR[i+1] - elbowJointR[i]) * k;
       return er;
     }
@@ -132,7 +132,7 @@ bool solveIK(float x, float y, float z){
   float bestShServo = shMin, Error = 999;
   for(int i = 0 ; i < (shMax - shMin) ; i++){
     float err = fabs(elbowDistanceTo((float)shMin+i, r, gh) - foreArm);//不断算残差，并取绝对值
-    if(err < Error) {bestShServo = shAngle + i; Error = err;}//利用绝对值判断残差之间的关系，找该精度下残差最小的大臂角
+    if(err < Error) {bestShServo = shMin + i; Error = err;}//利用绝对值判断残差之间的关系，找该精度下残差最小的大臂角
   }
 
   //3.根据上一步粗解的舵机角，找到准确的大臂舵机角(二分法找零点)

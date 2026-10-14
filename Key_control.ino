@@ -28,11 +28,8 @@ void doKeyTask(int n){
     }
     Serial.print(F("Key1 Pressed -> object:"));
     Serial.println(currentgrab);   // 0=A, 1=B, 2=C
-    if(currentgrab < 2){
-      doGrab(currentgrab);
-      currentgrab++;
-    }
-    if(currentgrab > 2) currentgrab = 0;
+    doGrab(currentgrab);
+    currentgrab = (currentgrab + 1) % 3;
     return;
   }
 
@@ -77,7 +74,7 @@ void doKeyTask(int n){
       return;    
     }
     isAutoRunning = true;
-    setAngles(homePose[0], homePose[1], homePose[2], homePose[3]);
+    setAngles(homePose[0], homePose[1], homePose[2], homeGripperAngle);
     waitMs(800);
     isAutoRunning = false;
     clearSerial();

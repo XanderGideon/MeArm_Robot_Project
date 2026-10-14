@@ -272,8 +272,8 @@ void tickDraw(){
          return;
       }
       float b = StartB + (homeB - StartB) * (homeStep / homeSteps);
-      float s = StartB + (homeS - StartS) * (homeStep / homeSteps);
-      float e = StartB + (homeE - StartE) * (homeStep / homeSteps);
+      float s = StartS + (homeS - StartS) * (homeStep / homeSteps);
+      float e = StartE + (homeE - StartE) * (homeStep / homeSteps);
       setAngles(b, s, e, grAngle);
       return;
    }

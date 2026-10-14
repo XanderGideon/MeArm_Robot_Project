@@ -18,7 +18,7 @@
 // ===== 把串口里堆积的旧指令丢掉 =====
 // 一个抓取动作要好几秒，动作过程中按下的按键会堆在串口缓冲区里，
 void clearSerial(){
-  if(Serial.available() > 0) Serial.read();
+  while(Serial.available() > 0) Serial.read();
   inputString = "";
   inputComplete = false;
 }
@@ -82,7 +82,7 @@ void HandleSerial() {
       case 'S':
         if(autoBusy()){ Serial.println(F("Busy!")); break; }
         setAngles(baseAngle, shAngle, elAngle, grMax);
-        Serial.println(F("Gripper:Open")); 
+        Serial.println(F("Gripper:Close")); 
         break;    
 
       case 'H':

@@ -107,7 +107,7 @@ float reachTolerance = 0.6;
 float tipX = 0.0, tipY = 0.0, tipZ = 0.0;
 
 // ===================== 逆运动学算出来的舵机角度 =====================
-int ikBase, ikSh, ikEl;
+float ikBase, ikSh, ikEl;
 
 //=======================任务五绘图状态相关变量========================
 #define  MAX_POINTS 5  //最多5个示教点
