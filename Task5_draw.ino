@@ -61,6 +61,9 @@ float lineX2_inpaper = 0.0, lineY2_inpaper = 30.0;
 //子任务二绘制三角形，定义三角形在纸面上的坐标
 int shapePoints[8] = {-20,-20,  20,-20,  0,20,  -23,-23};
 
+//逆解后无法到达的点位计数
+int missCount = 0;
+
 /*========================第1层：工具层=========================*/
 // 1. 把纸面参考系中的笔尖坐标转换回绝对参考系中的笔尖坐标
 // 沟通两个坐标系的关键
@@ -130,7 +133,7 @@ void initSegment(){
    }
    else{ //常规线段插值
       segStartX = pathX[segIndex];
-      segStartY = pathX[segIndex];
+      segStartY = pathY[segIndex];
       segEndX = pathX[segIndex + 1];
       segEndY = pathY[segIndex + 1];      
    }
@@ -217,7 +220,7 @@ void startDraw(){
       pathX[1] = paperToWorldX(lineX2_inpaper);
       pathY[1] = paperToWorldY(lineY2_inpaper);
    }
-   else if(taskType = 1){
+   else if(taskType == 1){
       pathCount = 4;
       for(int i = 0 ; i < pathCount ; i++){
          pathX[i] = paperToWorldX(shapePoints[i * 2]);
@@ -253,12 +256,12 @@ void tickDraw(){
    lastStepTime = millis();
    nowStepTime = drawStepTime; //复位节拍
 
-   if(drawState = 1){
+   if(drawState == 1){
       homeStep++;
       if(homeStep >= homeSteps){
          setAngles(homeB, homeS, homeE, homeG);
          calcTipPosition();
-         if(afterHome = 2){
+         if(afterHome == 2){
             startGoFirstPoint();
          } else {
             drawState = 0;
@@ -268,13 +271,13 @@ void tickDraw(){
          return;
       }
       float b = StartB + (homeB - StartB) * (homeStep / homeSteps);
-      float s = StartB + (homeB - StartB) * (homeStep / homeSteps);
-      float e = StartB + (homeB - StartB) * (homeStep / homeSteps);
+      float s = StartB + (homeS - StartS) * (homeStep / homeSteps);
+      float e = StartB + (homeE - StartE) * (homeStep / homeSteps);
       setAngles(b, s, e, grAngle);
       return;
    }
 
-   if(drawState = 2){
+   if(drawState == 2){
       segNowStep++;
       if(segNowStep > segTotalSteps){
          moveTipTo(pathX[0], pathY[0], paperZ - penPress);
@@ -289,7 +292,7 @@ void tickDraw(){
       return;
    }
 
-   if(drawState = 3){
+   if(drawState == 3){
       segNowStep++;
       if(segNowStep > segTotalSteps){
          segIndex++;

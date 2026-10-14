@@ -17,7 +17,7 @@ int objectPos[3][6] = {//关节空间
 };
 
 int gripperCloseAngles[3] = {155, 125, 150};//三个物体不同夹爪夹紧角度
-int gripperOpenAngle = 20;//夹爪张角
+int gripperOpenAngle = 80;//夹爪张角
 int liftAngle = 25;//大臂抬升高度，设置时大臂角度减去这个值
 
 
@@ -53,7 +53,7 @@ void doGrab(int index){//index即为currentgrab
   setAngles(grabBase, grabSh, grabEl, gripperOpenAngle);
   waitMs(800);  
   // 3. 使用该物体专属角度夹住物体
-  setAngles(grabBase, travelSh, grabEl, grabCloseAngle);
+  setAngles(grabBase, grabSh, grabEl, grabCloseAngle);
   waitMs(800);
   // 4. 抬升
   setAngles(grabBase, travelSh, grabEl, grabCloseAngle);

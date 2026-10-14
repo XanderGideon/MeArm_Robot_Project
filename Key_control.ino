@@ -87,7 +87,7 @@ void doKeyTask(int n){
 
 void doKeyDraw(int n , bool isLong){
   // ==================== 按键 5：示教点 ====================
-  if(n == 5){
+  if(n == 5 && !isLong){
     if(isAutoRunning || isRecording){
       Serial.println(F("Busy!"));
       return;      
@@ -107,7 +107,7 @@ void doKeyDraw(int n , bool isLong){
   }
 
   // ==================== 按键 6：开始 / 换任务 ====================
-  if(n == 6){
+  if(n == 6 && !isLong){
     if(isAutoRunning && isRecording){
       Serial.println(F("Busy!"));
       return;      
@@ -127,7 +127,7 @@ void doKeyDraw(int n , bool isLong){
 
  // ==================== 按键 7：暂停 / 继续 ====================
   // 短按：暂停时抬笔，继续时放笔，从断点接着画
-  if(n == 7){
+  if(n == 7 && !isLong){
     if(drawState != 3){
       Serial.println(F("# 只在画线时能暂停/继续"));
       return;      
@@ -159,14 +159,13 @@ void doKeyDraw(int n , bool isLong){
   }
 
  // ==================== 按键 8:取消当前状态，回待机 ====================
-  if(n == 8){
+  if(n == 8 && !isLong){
     if(drawState == 0) return;
     paused = false;
     Serial.println(F("# CANCEL"));
     startGoHome(0);
     return;
   }
-
 }
 
 // ===================== 按键总入口 =====================

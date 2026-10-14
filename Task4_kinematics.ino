@@ -48,7 +48,7 @@ float shoulderServoToElbowR(float ShAngle){
   for(int i = 0 ; i < elbowJointPoints - 1 ; i++){
     if(ShAngle <= shoulderServoAngles[i + 1]){
       float k = (shAngle - shoulderServoAngles[i]) / (shoulderServoAngles[i + 1] - shoulderServoAngles[i]);
-      float er = elbowJointH[i] + (elbowJointH[i+1] - elbowJointH[i]) * k;
+      float er = elbowJointR[i] + (elbowJointR[i+1] - elbowJointR[i]) * k;
       return er;
     }
   }
@@ -60,7 +60,7 @@ float shoulderServoToElbowH(float ShAngle){
   if(ShAngle > shoulderServoAngles[4]) ShAngle = shoulderServoAngles[4];
   for(int i = 0 ; i < (elbowJointPoints - 1) ; i++){
     if(ShAngle <= shoulderServoAngles[i + 1]){
-      float k = (shAngle - shoulderServoAngles[i]) / (shoulderServoAngles[i + 1] - shoulderServoAngles[i]);
+      float k = (ShAngle - shoulderServoAngles[i]) / (shoulderServoAngles[i + 1] - shoulderServoAngles[i]);
       float eh = elbowJointH[i] + (elbowJointH[i+1] - elbowJointH[i]) * k;
       return eh;
     }
@@ -78,7 +78,7 @@ float elbowDistanceTo(float ShAngle, float r, float h){
 /*========================第2层：传动换算层========================*/
 /*1) 输入小臂舵机角，返回小臂的绝对角（相对于水平面）*/
 float forearmServoToAbsAngle(float ElAngle){
-  float deltaAngle = ElAngle - foreArmAbsAngle; 
+  float deltaAngle = ElAngle - elbowServoNode; 
   if(deltaAngle <= 0) return foreArmAbsAngle + deltaAngle * armGainDown;
   return foreArmAbsAngle + deltaAngle * armGainUp;
 }
@@ -131,7 +131,7 @@ bool solveIK(float x, float y, float z){
   //2.在大臂舵机限幅中找粗略的结果（精度为1度）
   float bestShServo = shMin, Error = 999;
   for(int i = 0 ; i < (shMax - shMin) ; i++){
-    float err = fabs(elbowDistanceTo((float)shAngle+i, r, gh) - foreArm);//不断算残差，并取绝对值
+    float err = fabs(elbowDistanceTo((float)shMin+i, r, gh) - foreArm);//不断算残差，并取绝对值
     if(err < Error) {bestShServo = shAngle + i; Error = err;}//利用绝对值判断残差之间的关系，找该精度下残差最小的大臂角
   }
 
@@ -171,7 +171,9 @@ bool solveIK(float x, float y, float z){
 
 /*========================第4层：实际驱动层=======================*/
 //写舵机
-void moveTipTo(float x, float y, float z){
+bool moveTipTo(float x, float y, float z){
+  if(!solveIK(x, y, z)) return false;
   setAngles(ikBase, ikSh, ikEl, grAngle);
   calcTipPosition();
+  return true;
 }

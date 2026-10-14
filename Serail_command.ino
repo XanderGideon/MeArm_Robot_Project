@@ -109,7 +109,9 @@ void HandleSerial() {
         break;
       
       // -------------- 打印操作指南 ---------------
-      case 'M': printHelp();
+      case 'M': 
+        printHelp();
+        break;
 
       case 'P':
         Serial.println(base.read());

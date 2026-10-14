@@ -139,7 +139,7 @@ void setAngles(int b, int s, int e, int g){
   float upperArmTheta = upperArmServoToAbsAngle(shAngle);
   float foreArmTheta = forearmServoToAbsAngle(elAngle);
   if(foreArmTheta - upperArmTheta < foldMin){
-    elAngle = constrain(AbsAngleToforearmServo(foreArmTheta + foldMin), (int)elMin, (int)elMax);
+    elAngle = constrain(AbsAngleToforearmServo(upperArmTheta + foldMin), (int)elMin, (int)elMax);
   }
 
   writeServoAngle(&base, baseAngle);
