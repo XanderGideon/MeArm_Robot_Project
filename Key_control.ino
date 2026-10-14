@@ -37,7 +37,7 @@ void doKeyTask(int n){
   /* 这里故意只判断 isAutoRunning / drawState，不判断 isRecording：
      第二次按下的作用就是"结束录制"，要是也拦着，就永远停不下来了。 */
   if(n == 2){
-    if(isAutoRunning){
+    if(isAutoRunning || drawState != 0){
       Serial.println(F("Busy!"));
       return;
     }
@@ -105,7 +105,7 @@ void doKeyDraw(int n , bool isLong){
 
   // ==================== 按键 6：开始 / 换任务 ====================
   if(n == 6 && !isLong){
-    if(isAutoRunning && isRecording){
+    if(isAutoRunning || isRecording){
       Serial.println(F("Busy!"));
       return;      
     }

@@ -35,12 +35,12 @@ void printHelp() {
   Serial.println(F("  1=循环夹取 A/B/C      2=录制(再按一次结束)"));
   Serial.println(F("  3=回放上一次录的      4=回中"));
   Serial.println(F("按键 5~8(任务五):"));
-  Serial.println(F("短按:5=记一个示教点       6=开始画 / 停下"));
+  Serial.println(F("短按:5=记一个示教点       6=开始画 "));
   Serial.println(F("  7=暂停 / 继续        8=取消（停住回待机）"));
   Serial.println(F("长按:5=清空示教点     6=换任务类型"));
-  Serial.println(F("      7=换图形         8=打印状态"));
+  Serial.println(F("     7=画图形                     "));
   Serial.println(F("串口:O=张开 S=闭合 H/L=任务一摇杆提速/降速"));
-  Serial.println(F("      M=按键表 P=状态 T=自检(后续任务速度固定,不受H/L影响)"));
+  Serial.println(F("      M=打印操作指南"));
   Serial.println(F("      x90,y60,z30  -> 三个舵机一起动(只认这一个格式)"));
   Serial.println(F("      A / B / C    -> 夹取物体 A / B / C"));
   Serial.println(F("      1~8 / L1~L8  -> 遥控板短按 / 长按"));
@@ -112,20 +112,13 @@ void HandleSerial() {
       case 'M': 
         printHelp();
         break;
-
-      case 'P':
-        Serial.println(base.read());
-        Serial.println(shoulder.read());
-        Serial.println(elbow.read());
-        Serial.println(gripper.read());
-        break;
         
       default: Serial.println(F("Error!")); break;
     }
   }
 
   // ------------------ 遥控板长按 --------------------
-  else if(len == 2 && cmd == 'L' && inputString[1] >= '5' && inputString[1] <= '8'){
+  else if(len == 2 && cmd == 'L' && inputString[1] >= '5' && inputString[1] <= '7'){
     doKey(inputString[1] - '0', true);
   }
 

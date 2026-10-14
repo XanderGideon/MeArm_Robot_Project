@@ -18,10 +18,10 @@ int grMin   = 80,  grMax   = 180;//爪子
 float foldMin = -120.0;
 
 // 当前角度（唯一真值：所有控制方式都改这几个变量）
-int baseAngle = 90;
-int shAngle   = 90;
-int elAngle   = 90;
-int grAngle   = 145;//上电即可夹笔
+float baseAngle = 90;
+float shAngle   = 90;
+float elAngle   = 90;
+float grAngle   = 145;//上电即可夹笔
 
 //摇杆引脚
 const int joy1X = A0; // 底座
@@ -129,17 +129,17 @@ void writeServoAngle(Servo *servo, float angle){
 }
 
 // 一个改变舵机角度的入口，将原本散乱的write函数全部集合于此，改变时只需调用函数
-void setAngles(int b, int s, int e, int g){
-  baseAngle = constrain(b, baseMin, baseMax);
-  shAngle = constrain(s, shMin, shMax);
-  elAngle = constrain(e, elMin, elMax);
-  grAngle = constrain(g, grMin, grMax);
+void setAngles(float b, float s, float e, float g){
+  baseAngle = constrain(b, (float)baseMin, (float)baseMax);
+  shAngle = constrain(s, (float)shMin, (float)shMax);
+  elAngle = constrain(e, (float)elMin, (float)elMax);
+  grAngle = constrain(g, (float)grMin, (float)grMax);
 
   //防止自撞(计算小臂绝对角与大臂虚拟)
   float upperArmTheta = upperArmServoToAbsAngle(shAngle);
   float foreArmTheta = forearmServoToAbsAngle(elAngle);
   if(foreArmTheta - upperArmTheta < foldMin){
-    elAngle = constrain(AbsAngleToforearmServo(upperArmTheta + foldMin), (int)elMin, (int)elMax);
+    elAngle = constrain(AbsAngleToforearmServo(upperArmTheta + foldMin), (float)elMin, (float)elMax);
   }
 
   writeServoAngle(&base, baseAngle);
@@ -165,7 +165,7 @@ void updateJoysticks(){
   int v2y = analogRead(joy2Y);
 
   bool moved = false;
-  int b = baseAngle, s = shAngle, e = elAngle, g = grAngle;
+  float b = baseAngle, s = shAngle, e = elAngle, g = grAngle;
   
   // 每个轴：(摇杆值 - 512) / 100 => 死区外每 100 个模拟量变化约 1 度，
   // 由于舵机硬件存在客观问题，故而设置死区

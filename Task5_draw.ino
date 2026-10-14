@@ -95,16 +95,8 @@ void recordTeachPoints(){
    teachY[teachCount] = tipY;
    teachCount++;
 
-   Serial.print(F("# P"));
+   Serial.print(F("PointCount:"));
    Serial.print(teachCount);
-   Serial.print(F(" u="));
-   Serial.print(tipX - paperX, 1);
-   Serial.print(F(" v="));
-   Serial.print(tipY - paperY, 1);
-   Serial.print(F(" x="));
-   Serial.print(tipX, 1);
-   Serial.print(F(" y="));
-   Serial.println(tipY, 1);
 }
 
 //4.切换子任务
@@ -271,9 +263,9 @@ void tickDraw(){
          }
          return;
       }
-      float b = StartB + (homeB - StartB) * (homeStep / homeSteps);
-      float s = StartS + (homeS - StartS) * (homeStep / homeSteps);
-      float e = StartE + (homeE - StartE) * (homeStep / homeSteps);
+      float b = StartB + (homeB - StartB) * ((float)homeStep / homeSteps);
+      float s = StartS + (homeS - StartS) * ((float)homeStep / homeSteps);
+      float e = StartE + (homeE - StartE) * ((float)homeStep / homeSteps);
       setAngles(b, s, e, grAngle);
       return;
    }

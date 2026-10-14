@@ -52,6 +52,7 @@ float shoulderServoToElbowR(float ShAngle){
       return er;
     }
   }
+  return elbowJointR[elbowJointPoints - 1];
 }
 
 /*2) 输入大臂舵机角 y，进行查表与插值计算，返回肘转轴离桌面的高度 eh*/
@@ -65,6 +66,7 @@ float shoulderServoToElbowH(float ShAngle){
       return eh;
     }
   }
+  return elbowJointH[elbowJointPoints - 1];
 }
 
 /*3) 输入大臂角 y （利用上面两个函数算肘关节位置）和目标点 (r, h)，返回肘到目标点的直线距离h*/
