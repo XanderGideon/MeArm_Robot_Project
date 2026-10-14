@@ -10,7 +10,7 @@ const int gripperPin = 6;//夹爪
 
 // 安全角度范围
 int baseMin = 0,   baseMax = 180;//底座
-int shMin   = 80,  shMax   = 155;//大臂
+int shMin   = 70,  shMax   = 155;//大臂
 int elMin   = 35,   elMax   = 135;//小臂
 int grMin   = 80,  grMax   = 180;//爪子
 
@@ -33,14 +33,14 @@ const int joy2Y = A2; // 夹爪
 const int joyDeadzone = 60;
 
 //===============速度控制=================
-int motorSpeed = 30;//正常速度
+int motorSpeed = 35;//正常速度
 const int speedCount = 3;
-const int joyDelayTable[speedCount] = {10, 30, 50};//三个摇杆延时档位
+const int joyDelayTable[speedCount] = {10, 35, 50};//三个摇杆延时档位
 int speedLevel = 1;//初始设置为正常速度
 
 //==============回中姿态====================
 //全局都用这个来回中，不再单独写
-int homePose[3] = {90, 80, 100}; // 底座、大臂、小臂
+int homePose[3] = {90, 80, 95}; // 底座、大臂、小臂
 int homeGripperAngle = 80; //回中时爪子张开，方便衔接
 
 //串口接收缓冲区与标志位
@@ -83,9 +83,9 @@ float shoulderJointH = 36.7;
 
 /* 5) 小臂传动比 */
 float elbowServoNode = 90.0;    // 临界点小臂舵机角度
-float foreArmAbsAngle = -7.5;    // 临界点小臂舵机角度90° 时的绝对角
-float armGainDown = 0.883;   // 下段斜率
-float armGainUp = 0.817;   // 上段斜率
+float foreArmAbsAngle = -2.9;    // 临界点小臂舵机角度90° 时的绝对角
+float armGainDown = 0.522;   // 下段斜率
+float armGainUp = 0.607;   // 上段斜率
 
 /* 6) 抬笔高度 单位 mm */
 float liftZ  = 12.0;     // 抬笔画线的时候抬多高
@@ -100,7 +100,7 @@ float paperZ = 0.0;
 float gripR = 0.0, gripH = 0.0;//爪子距离底座舵机转轴的水平距离与竖直距离
 
 /* 9) 判断能否到达远端的容忍误差，残差超过这个容忍误差，返回false */
-float reachTolerance = 0.6;
+float reachTolerance = 0.8;
 
 // ===================== 正运动学算出来的笔尖位置 =====================
 //此处定义为笔尖在绝对参考系之中的坐标
@@ -111,12 +111,12 @@ float ikBase, ikSh, ikEl;
 
 //=======================任务五绘图状态相关变量========================
 #define  MAX_POINTS 5  //最多5个示教点
-int taskType = 0; // 0=直线， 1=图形， 2=折线， 3=曲线
+int taskType = 2; // 0=直线， 1=图形， 2=折线， 3=曲线
 int drawState = 0; //当前任务进行状态 0=正在待机 1=回到待机状态 2=抬笔去第一个点 3=落笔开始画
 bool paused = false;
 int nowStepTime = 80;
-int connerWaitTime = 500; //拐角等待时间加长，完成回差补偿
-int drawStepTime = 80; //每画一步进行等待
+int connerWaitTime = 800; //拐角等待时间加长，完成回差补偿
+int drawStepTime = 120; //每画一步进行等待
 unsigned long lastStepTime = 0; //画图状态机的节拍(按键取消画图状态时需要复位)
 int teachCount = 0;
 

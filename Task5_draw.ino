@@ -58,8 +58,8 @@ int homeStep = 0, homeSteps = 30;
 float lineX1_inpaper = 0.0, lineY1_inpaper = -30.0;
 float lineX2_inpaper = 0.0, lineY2_inpaper = 30.0;
 
-//子任务二绘制三角形，定义三角形在纸面上的坐标
-int shapePoints[8] = {-20,-20,  20,-20,  0,20,  -23,-23};
+//子任务二绘制N，定义N在纸面上的坐标
+int shapePoints[8] = {-20,-20,  10,-20,  -20,-30,  10,-30};
 
 //绘图中无法到达的点位计数
 int missCount = 0;
@@ -134,7 +134,9 @@ void initSegment(){
    float dy = segEndY - segStartY;
    float len = sqrt(dx*dx + dy*dy);//计算该段的长度
 
-   segTotalSteps = (int)(len / 1.5);//计算要走几步
+   segTotalSteps = (int)(len / 0.8);//计算要走几步
+   if(segTotalSteps < 8) segTotalSteps = 8;
+   if(segTotalSteps > 80) segTotalSteps = 80;
    segNowStep = 0;
 }
 
