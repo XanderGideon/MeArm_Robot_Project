@@ -107,7 +107,7 @@ void recordTeachPoints(){
    teachCount++;
 
    Serial.print(F("PointCount:"));
-   Serial.print(teachCount);
+   Serial.println(teachCount);
 }
 
 //4.切换子任务
@@ -192,7 +192,15 @@ void calcStepPointXY(){
 /*========================第3层：触发层=========================*/
 // 1. 回待机状态(next = 回完舵机以后去哪 0=保持待机 2=去画第一个点)
 void startGoHome(int next){
-   if(tipValid && moveTipTo(tipX, tipY, paperZ + liftZ)){ /* 抬起来了 */ }
+   if(tipValid){
+      float liftPaper[4] = {liftZ, liftZ * 0.6, liftZ * 0.35, liftZ * 0.15};
+      for(int i = 0 ; i < 4 ; i++){
+         if(moveTipTo(tipX, tipY, paperZ + liftPaper[i])){
+            if(i > 0){ Serial.print(F("# 抬笔只抬到 ")); Serial.println(liftPaper[i], 1); }
+            break;x
+         }
+      }      
+   }
    drawState = 1;
    StartB = baseAngle;
    StartE = elAngle;
@@ -246,14 +254,15 @@ void startDraw(){
    // 开画前预检：每个点都要解得开，否则画到那里会卡住再猛甩
    int bad = 0;
    for(int i = 0 ; i < pathCount ; i++){
-      if(!solveIK(pathX[i], pathY[i], paperZ - penPress) ||
-         !solveIK(pathX[i], pathY[i], paperZ + liftZ)){
-         float rr = sqrt(pathX[i] * pathX[i] + pathY[i] * pathY[i]);
-         Serial.print(F("# 预检：第 "));
-         Serial.print(i + 1);
-         Serial.print(F(" 个点够不着  r="));
-         Serial.println(rr, 1);
+      float rr = sqrt(pathX[i] * pathX[i] + pathY[i] * pathY[i]);
+      if(!solveIK(pathX[i], pathY[i], paperZ - penPress)){        // 硬：画不到
+         Serial.print(F("# 预检：第 ")); Serial.print(i + 1);
+         Serial.print(F(" 个点画不到  r=")); Serial.println(rr, 1);
          bad++;
+      }
+      else if(!solveIK(pathX[i], pathY[i], paperZ + liftZ)){      // 软：只是悬不住
+         Serial.print(F("# 提示：第 ")); Serial.print(i + 1);
+         Serial.print(F(" 个点抬笔时略紧  r=")); Serial.println(rr, 1);
       }
    }
    if(bad > 0){

@@ -25,7 +25,7 @@ const unsigned int LongMs = 800;//超过这个时间算长按
 const unsigned int shortMs = 30;//低于这个时间算抖动
 
 bool keyDown[keyCount];//标志位，记住上一次的状态，是刚按下还是刚松开
-unsigned int downTime[keyCount];//记录按下的时刻
+unsigned long downTime[keyCount];//记录按下的时刻
 
 void setup(){
   Serial.begin(9600);

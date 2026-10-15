@@ -43,8 +43,8 @@
 /*========================第1层：查表工具层========================*/
 /*1) 输入大臂舵机角 y，进行查表与插值计算，返回肘转轴离底座转轴的水平距离 er*/
 float shoulderServoToElbowR(float ShAngle){
-  if(ShAngle < shoulderServoAngles[0]) return elbowJointR[0];
-  if(ShAngle > shoulderServoAngles[elbowJointPoints - 1]) return elbowJointR[elbowJointPoints - 1];
+  if(ShAngle <= shoulderServoAngles[0]) return elbowJointR[0];
+  if(ShAngle >= shoulderServoAngles[elbowJointPoints - 1]) return elbowJointR[elbowJointPoints - 1];
   for(int i = 0 ; i < (elbowJointPoints - 1) ; i++){
     if(ShAngle <= shoulderServoAngles[i + 1]){
       float k = (ShAngle - shoulderServoAngles[i]) / (shoulderServoAngles[i + 1] - shoulderServoAngles[i]);
@@ -57,8 +57,8 @@ float shoulderServoToElbowR(float ShAngle){
 
 /*2) 输入大臂舵机角 y，进行查表与插值计算，返回肘转轴离桌面的高度 eh*/
 float shoulderServoToElbowH(float ShAngle){
-  if(ShAngle < shoulderServoAngles[0]) return elbowJointH[0];
-  if(ShAngle > shoulderServoAngles[elbowJointPoints - 1]) return elbowJointH[elbowJointPoints - 1];
+  if(ShAngle <= shoulderServoAngles[0]) return elbowJointH[0];
+  if(ShAngle >= shoulderServoAngles[elbowJointPoints - 1]) return elbowJointH[elbowJointPoints - 1];
   for(int i = 0 ; i < (elbowJointPoints - 1) ; i++){
     if(ShAngle <= shoulderServoAngles[i + 1]){
       float k = (ShAngle - shoulderServoAngles[i]) / (shoulderServoAngles[i + 1] - shoulderServoAngles[i]);
@@ -96,7 +96,7 @@ float AbsAngleToforearmServo(float AbsAngle){
 float upperArmServoToAbsAngle(float ShAngle){
   float ddr = shoulderServoToElbowR(ShAngle) - shoulderJointR;
   float ddh = shoulderServoToElbowH(ShAngle) - shoulderJointH;
-  return atan2(ddh, ddr) / PI * 180.0 ;
+  return atan2(ddh, ddr) * 180.0 / PI;
 }
 
 /*========================第3层：运动学层=======================*/
@@ -119,14 +119,14 @@ void calcTipPosition(){
   lastOutOfTable = false;
 
   // 1. 底座舵机角 → 数学方位角
-  float t = (baseAngle - baseZero) * baseDir / 180.0 * PI;
+  float t = (baseAngle - baseZero) * baseDir * PI / 180.0 ;
 
   // 2. 大臂舵机角 → 查表得肘位置
   float er = shoulderServoToElbowR(shAngle);
   float eh = shoulderServoToElbowH(shAngle);
 
   // 3. 小臂舵机角 → 小臂绝对角
-  float a = forearmServoToAbsAngle(elAngle) / PI * 180.0;
+  float a = forearmServoToAbsAngle(elAngle) * PI / 180.0;
 
   // 4. 算爪缝中心位置（从肘位置，沿小臂方向延伸 armLen2）
   gripR = er + foreArm * cos(a);
