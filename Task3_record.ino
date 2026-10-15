@@ -38,7 +38,7 @@ void recordToggle(){
 } 
 
 /* ===================== 录满自动停后的统一提示 =====================
-   200 个点 × 60ms = 12 秒，录满了自己停并打印一次，格式和手动停一致。
+   150 个点 × 80ms = 12 秒，录满了自己停并打印一次，格式和手动停一致。
    停止代码在主文件中 */
 void printRecordFull() {
   Serial.print(F("Record buffer full -> STOP. points="));

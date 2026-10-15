@@ -91,6 +91,17 @@ void recordTeachPoints(){
     return;      
    }
    calcTipPosition();//过了上面两关，计算绝对坐标
+
+   if(!tipValid){
+      Serial.println(F("# 拒绝记点：大臂角在标定表外，先把大臂抬上来再按 5"));
+      return;
+   }
+
+   if(!solveIK(tipX, tipY, paperZ - penPress)){
+      Serial.println(F("# 拒绝记点：这个点笔尖够不着，把纸/点挪一下再按 5"));
+      return;
+   }
+   
    teachX[teachCount] = tipX;
    teachY[teachCount] = tipY;
    teachCount++;
@@ -181,7 +192,7 @@ void calcStepPointXY(){
 /*========================第3层：触发层=========================*/
 // 1. 回待机状态(next = 回完舵机以后去哪 0=保持待机 2=去画第一个点)
 void startGoHome(int next){
-   moveTipTo(tipX , tipY, paperZ + liftZ);
+   if(tipValid && moveTipTo(tipX, tipY, paperZ + liftZ)){ /* 抬起来了 */ }
    drawState = 1;
    StartB = baseAngle;
    StartE = elAngle;
@@ -233,6 +244,25 @@ void startDraw(){
          pathY[i] = teachY[i];
       }
    }
+
+   // 开画前预检：每个点都要解得开，否则画到那里会卡住再猛甩
+   int bad = 0;
+   for(int i = 0 ; i < pathCount ; i++){
+      if(!solveIK(pathX[i], pathY[i], paperZ - penPress) ||
+         !solveIK(pathX[i], pathY[i], paperZ + liftZ)){
+         float rr = sqrt(pathX[i] * pathX[i] + pathY[i] * pathY[i]);
+         Serial.print(F("# 预检：第 "));
+         Serial.print(i + 1);
+         Serial.print(F(" 个点够不着  r="));
+         Serial.println(rr, 1);
+         bad++;
+      }
+   }
+   if(bad > 0){
+      Serial.println(F("# 有够不着的点，不画"));
+      return;
+   }
+
    //先回待机姿态，再抬着笔去第 1 个点
    isAutoRunning = true;
    paused = false;

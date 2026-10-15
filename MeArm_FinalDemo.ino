@@ -10,7 +10,7 @@ const int gripperPin = 6;//夹爪
 
 // 安全角度范围
 int baseMin = 0,   baseMax = 180;//底座
-int shMin   = 70,  shMax   = 155;//大臂
+int shMin   = 75,  shMax   = 155;//大臂
 int elMin   = 35,   elMax   = 135;//小臂
 int grMin   = 80,  grMax   = 160;//爪子
 
@@ -54,12 +54,12 @@ bool isAutoRunning = false;
 int currentgrab = 0;//0 = A,1 = B,2 = C
 
 //任务三相关：录制
-#define MAX_RECORDS 200      //一共200个采样点
+#define MAX_RECORDS 150      //一共200个采样点
 byte recordData[MAX_RECORDS][4];   //每个点记录四个舵机此时的角度
 int recordCount = 0;               //已记录数
 bool isRecording = false;          //标志位
 unsigned long lastRecordTime = 0;  //用于非阻塞计时
-const int recordInterval = 60;     //每60ms记一次，共 200*60ms = 12s > 10s
+const int recordInterval = 80;     //每60ms记一次，共 200*60ms = 12s > 10s
 
 //任务五： 画图标定区 
 /*1）"小臂"+笔相关*/
@@ -71,10 +71,10 @@ float penPress = 1.4; // 笔尖可在纸面上下压
 float baseZero = 90.0,  baseDir =  1.0;   // 底座：数学角从 +x 轴逆时针量
 
 /* 3) 大臂舵机角度+轴转轴相关查表 */
-#define elbowJointPoints 5
-float shoulderServoAngles[elbowJointPoints]= {95.0, 110.0, 125.0, 140.0, 155.0};
-float elbowJointR[elbowJointPoints] = {39.6,  52.6,  72.6,  90.6,  95.6};
-float elbowJointH[elbowJointPoints] = {114.8, 107.8,  95.8,  75.8,  59.8};
+#define elbowJointPoints 9
+float shoulderServoAngles[elbowJointPoints]= { 75,80,85,90, 95,110,125,140,155};
+float elbowJointR[elbowJointPoints] = {22.3, 26.6, 30.9, 35.3, 39.6,  52.6,  72.6,  90.6,  95.6};
+float elbowJointH[elbowJointPoints] = { 124.1, 121.8, 119.5, 117.1, 114.8, 107.8,  95.8,  75.8,  59.8};
 
 /* 4) 等效大臂长+拟合肩关节位置*/
 float shoulderJointR = 20.1;
@@ -115,7 +115,7 @@ int taskType = 2; // 0=直线， 1=图形， 2=折线， 3=曲线
 int drawState = 0; //当前任务进行状态 0=正在待机 1=回到待机状态 2=抬笔去第一个点 3=落笔开始画
 bool paused = false;
 int nowStepTime = 80;
-int connerWaitTime = 800; //拐角等待时间加长，完成回差补偿
+int connerWaitTime = 1000; //拐角等待时间加长，完成回差补偿
 int drawStepTime = 120; //每画一步进行等待
 unsigned long lastStepTime = 0; //画图状态机的节拍(按键取消画图状态时需要复位)
 int teachCount = 0;
