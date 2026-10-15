@@ -52,7 +52,7 @@ float nowY = 0; //在该段中绘制到某一步时的y坐标(相对基坐标系
 int afterHome = 0; //回完待机以后去哪个状态
 float StartB, StartS, StartE; //从这三个初始角度开始回待机
 float homeB = 90, homeS = 110, homeE = 85, homeG = 155; //标准待机角度
-int homeStep = 0, homeSteps = 30;
+int homeStep = 0, homeSteps = 40;
 
 //子任务一直线的首尾点坐标规定(相对于纸面坐标系)
 float lineX1_inpaper = 0.0, lineY1_inpaper = -30.0;
@@ -221,10 +221,8 @@ void startDraw(){
    // 按任务类型先把这一趟的路径点准备好
    if(taskType == 0){
       pathCount = 2;
-      pathX[0] = paperToWorldX(lineX1_inpaper);
-      pathY[0] = paperToWorldY(lineY1_inpaper);
-      pathX[1] = paperToWorldX(lineX2_inpaper);
-      pathY[1] = paperToWorldY(lineY2_inpaper);
+      pathX[0] = paperToWorldX(lineX1_inpaper);pathY[0] = paperToWorldY(lineY1_inpaper);
+      pathX[1] = paperToWorldX(lineX2_inpaper);pathY[1] = paperToWorldY(lineY2_inpaper);
    }
    else if(taskType == 1){
       pathCount = 4;
