@@ -11,13 +11,14 @@
   =======================================================*/
 
 int objectPos[3][6] = {//关节空间
-  { 30, 130, 80,   135, 125, 80},   // 物体 A：抓取点 base=30，放置点 base=135
-  { 75, 130, 80,   155, 125, 80},   // 物体 B：抓取点 base=75，放置点 base=155
-  {120, 130, 80,   170, 125, 80},   // 物体 C：抓取点 base=120，放置点 base=170
+  {77,142,35 ,   105, 125, 47},// 硬币
+  { 90, 143, 100,   58, 90, 62},   // 笔
+  { 91, 142, 37,   110, 125, 50},// 小盒子
+  
 };
 
-int gripperCloseAngles[3] = {155, 125, 150};//三个物体不同夹爪夹紧角度
-int gripperOpenAngle = 80;//夹爪张角
+int gripperCloseAngles[3] = {160, 162, 150};//三个物体不同夹爪夹紧角度
+int gripperOpenAngle = 85;//夹爪张角
 int liftAngle = 25;//大臂抬升高度，设置时大臂角度减去这个值
 
 
@@ -26,6 +27,7 @@ void doGrab(int index){//index即为currentgrab
     Serial.println(F("Busy!"));
     return;
   }
+
   isAutoRunning = true;//开启自动控制模式
 
   Serial.print(F("Grab object "));
@@ -48,6 +50,8 @@ void doGrab(int index){//index即为currentgrab
   // 1. 底座转到抓取点，同时抬高大臂，爪子张开  
   setAngles(grabBase, travelSh, grabEl, gripperOpenAngle);
   waitMs(800);
+
+
 
   // 2. 下降到抓取高度
   setAngles(grabBase, grabSh, grabEl, gripperOpenAngle);

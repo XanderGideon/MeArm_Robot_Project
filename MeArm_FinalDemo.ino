@@ -10,16 +10,16 @@ const int gripperPin = 6;//夹爪
 
 // 安全角度范围
 int baseMin = 0,   baseMax = 180;//底座
-int shMin   = 75,  shMax   = 155;//大臂
+int shMin   = 70,  shMax   = 155;//大臂
 int elMin   = 35,   elMax   = 135;//小臂
 int grMin   = 80,  grMax   = 160;//爪子
 
 //肘部最多能折回來多少
-float foldMin = -120.0;
+float foldMin = -115.0;
 
 // 当前角度（唯一真值：所有控制方式都改这几个变量）
 float baseAngle = 90;
-float shAngle   = 90;
+float shAngle   = 75;
 float elAngle   = 90;
 float grAngle   = 150;//上电即可夹笔
 
@@ -40,8 +40,8 @@ int speedLevel = 1;//初始设置为正常速度
 
 //==============回中姿态====================
 //全局都用这个来回中，不再单独写
-int homePose[3] = {90, 110, 85}; // 底座、大臂、小臂
-int homeGripperAngle = 80; //回中时爪子张开，方便衔接
+int homePose[3] = {90, 80, 85}; // 底座、大臂、小臂
+int homeGripperAngle = 90; //回中时爪子张开，方便衔接
 
 //串口接收缓冲区与标志位
 String inputString = "";

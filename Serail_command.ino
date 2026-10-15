@@ -112,6 +112,14 @@ void HandleSerial() {
       case 'M': 
         printHelp();
         break;
+
+      case 'P':
+        Serial.println((base.read()));
+        Serial.println((shoulder.read()));
+        Serial.println((elbow.read()));
+        Serial.println((gripper.read()));
+        Serial.println("-----------------");
+        break;
         
       default: Serial.println(F("Error!")); break;
     }

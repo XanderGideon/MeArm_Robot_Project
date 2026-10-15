@@ -64,7 +64,7 @@ void doKeyTask(int n){
     }
     isAutoRunning = false;
     clearSerial();
-    Serial.println(F("play Stop"));
+    Serial.println(F("Play Stop"));
     return;
   }
 
@@ -132,16 +132,16 @@ void doKeyDraw(int n , bool isLong){
     }
     if(!paused){
       // ---- 暂停：原地竖直抬笔 ----
-      moveTipTo(tipX, tipY, paperZ + liftZ);
+      moveTipTo(tipX, tipY, paperZ);
       paused = true;
-      Serial.println(F("# PAUSE (笔已抬起)"));
+      Serial.println(F("# PAUSE "));
     }
     else{
       // ---- 继续：原地放笔，从断点接着画 ----
       moveTipTo(tipX, tipY, paperZ - penPress);
       paused = false;
       lastStepTime = millis();// 重置计时
-      Serial.println(F("# CONTINUE (从原处继续)"));
+      Serial.println(F("# CONTINUE "));
     }
     return;
   }

@@ -18,6 +18,35 @@
       1 = 回待机状态（线性插值走回去）
       2 = 抬笔去第一个点
       3 = 落笔画线中
+   ----------------------------------------------------------------------
+     第 4 层：触发层                              
+       startDraw()          ← 开始/停止画图      
+       startGoHome()        ← 回待机姿态         
+       startGoFirstPoint()  ← 抬笔去首点         
+ 
+                     ↑ ↑
+
+     第 3 层：状态机层                            
+       tickDraw()           ← 每轮走一小步       
+  
+                     ↑ ↑
+
+     第 2 层：插值层                              
+       initSegment()        ← 分段插值准备 
+       initSplineCurve()    ← Catmull-Rom 样条插值准备             
+       calcStepPointXY()    ← 算中间点坐标 
+
+                     ↑ ↑
+
+     第 1 层：工具层                              
+       paperToWorldX/Y()    ← 纸面→绝对坐标      
+       taskName()           ← 任务类型名字       
+       recordTeachPoints()        ← 记示教点                  
+       switchTask()         ← 换任务类型         
+       
+                     ↑ ↑
+
+     第 0 层：变量定义层      
 ===================================================================== */
 
 /*========================第0层：相关变量定义=========================*/
@@ -37,7 +66,7 @@ int homeBase = 90, homeSh = 110, homeEl = 85, homeGr = 155;
 //根据子任务不同，设置不同的绘制段数
 //根据插值比例，设置绘制每段所需的步数
 int segIndex = 0; //本次绘制画到第几段
-int segTotalSteps = 0; //绘制本段需要多少步，设定每一小步走1.5mm
+int segTotalSteps = 0; //绘制本段需要多少步，设定每一小步走0.8mm
 int segNowStep = 0; //本段绘制到第几步
 
 float segStartX = 0; //这一段绘制开始时的起点x(相对基坐标系)
@@ -189,17 +218,90 @@ void calcStepPointXY(){
    }
 }
 
-/*========================第3层：触发层=========================*/
+/*========================第3层：状态机层=========================*/
+//每轮 loop() 走一小步。非阻塞状态机
+void tickDraw(){
+   if(drawState == 0 || paused) return; //待机或者暂停
+   if(millis() - lastStepTime < nowStepTime) return; //时间间隔没走完
+   lastStepTime = millis(); //实时记录时间
+   nowStepTime = drawStepTime; //复位节拍
+
+   if(drawState == 1){//回待机
+      homeStep++;
+      if(homeStep >= homeSteps){
+         setAngles(homeB, homeS, homeE, homeG);
+         calcTipPosition();
+         if(afterHome == 2){
+            startGoFirstPoint();
+         } else {
+            drawState = 0;
+            isAutoRunning = false;
+            Serial.println(F("# home, ready"));
+         }
+         return;
+      }
+      float b = StartB + (homeB - StartB) * ((float)homeStep / homeSteps);
+      float s = StartS + (homeS - StartS) * ((float)homeStep / homeSteps);
+      float e = StartE + (homeE - StartE) * ((float)homeStep / homeSteps);
+      setAngles(b, s, e, grAngle);
+      return;
+   }
+
+   if(drawState == 2){
+      segNowStep++;
+      if(segNowStep > segTotalSteps){
+         int k = segNowStep - segTotalSteps;
+         if(k == 1){
+            if(!moveTipTo(pathX[0], pathY[0], paperZ + liftZ * 0.35)) missCount++;
+         }
+         else if(k == 2){
+            if(!moveTipTo(pathX[0], pathY[0], paperZ + liftZ * 0.10)) missCount++;
+         }
+         else{
+            if(!moveTipTo(pathX[0], pathY[0], paperZ - penPress)) missCount++;
+            segIndex = 0;                             
+            initSegment();
+            drawState = 3;
+            nowStepTime = drawStepTime + connerWaitTime;   // 落笔停稳再开画
+         }
+         return;
+      }
+      calcStepPointXY();
+      if(!moveTipTo(nowX, nowY, paperZ + liftZ)) missCount++;//去第一个点的路上，期间一直是抬笔状态
+      return;
+   }
+
+   if(drawState == 3){
+      segNowStep++;
+      if(segNowStep > segTotalSteps){
+         segIndex++;
+         if(segIndex > pathCount - 2){
+            Serial.print(F("# drawing done  misscount = "));
+            Serial.println(missCount);
+            startGoHome(0);
+            nowStepTime = drawStepTime + connerWaitTime * 3; //笔尖停一下再起来
+            return;
+         }
+         initSegment();
+         nowStepTime = drawStepTime + connerWaitTime;
+         return;
+      }
+      calcStepPointXY();
+      if(!moveTipTo(nowX, nowY, paperZ - penPress)) missCount++;
+      return;
+   }
+}
+
+
+/*========================第4层：触发层=========================*/
 // 1. 回待机状态(next = 回完舵机以后去哪 0=保持待机 2=去画第一个点)
 void startGoHome(int next){
    if(tipValid){
-      float liftPaper[4] = {liftZ, liftZ * 0.6, liftZ * 0.35, liftZ * 0.15};
-      for(int i = 0 ; i < 4 ; i++){
-         if(moveTipTo(tipX, tipY, paperZ + liftPaper[i])){
-            if(i > 0){ Serial.print(F("# 抬笔只抬到 ")); Serial.println(liftPaper[i], 1); }
-            break;x
-         }
-      }      
+      // 先只抬 1.5mm 离开纸面，停一下再抬到 12mm（原来是"一步蹦起来"）
+      if(moveTipTo(tipX, tipY, paperZ + 1.5)){
+         delay(150);
+         moveTipTo(tipX, tipY, paperZ + liftZ);
+      }
    }
    drawState = 1;
    StartB = baseAngle;
@@ -281,76 +383,3 @@ void startDraw(){
    startGoHome(2);
 }
 
-/*========================第4层：状态机层=========================*/
-//每轮 loop() 走一小步。非阻塞状态机
-void tickDraw(){
-   if(drawState == 0 || paused) return; //待机或者暂停
-   if(millis() - lastStepTime < nowStepTime) return; //时间间隔没走完
-   lastStepTime = millis(); //实时记录时间
-   nowStepTime = drawStepTime; //复位节拍
-
-   if(drawState == 1){//回待机
-      homeStep++;
-      if(homeStep >= homeSteps){
-         setAngles(homeB, homeS, homeE, homeG);
-         calcTipPosition();
-         if(afterHome == 2){
-            startGoFirstPoint();
-         } else {
-            drawState = 0;
-            isAutoRunning = false;
-            Serial.println(F("# home, ready"));
-         }
-         return;
-      }
-      float b = StartB + (homeB - StartB) * ((float)homeStep / homeSteps);
-      float s = StartS + (homeS - StartS) * ((float)homeStep / homeSteps);
-      float e = StartE + (homeE - StartE) * ((float)homeStep / homeSteps);
-      setAngles(b, s, e, grAngle);
-      return;
-   }
-
-   if(drawState == 2){
-      segNowStep++;
-      if(segNowStep > segTotalSteps){
-         int k = segNowStep - segTotalSteps;
-         if(k == 1){
-            if(!moveTipTo(pathX[0], pathY[0], paperZ + liftZ * 0.35)) missCount++;
-         }
-         else if(k == 2){
-            if(!moveTipTo(pathX[0], pathY[0], paperZ + liftZ * 0.10)) missCount++;
-         }
-         else{
-            if(!moveTipTo(pathX[0], pathY[0], paperZ - penPress)) missCount++;
-            segIndex = 0;                             
-            initSegment();
-            drawState = 3;
-            nowStepTime = drawStepTime + connerWaitTime;   // 落笔停稳再开画
-         }
-         return;
-      }
-      calcStepPointXY();
-      if(!moveTipTo(nowX, nowY, paperZ + liftZ)) missCount++;//去第一个点的路上，期间一直是抬笔状态
-      return;
-   }
-
-   if(drawState == 3){
-      segNowStep++;
-      if(segNowStep > segTotalSteps){
-         segIndex++;
-         if(segIndex > pathCount - 2){
-            Serial.print(F("# drawing done  misscount = "));
-            Serial.println(missCount);
-            startGoHome(0);
-            nowStepTime = drawStepTime + connerWaitTime * 3; //笔尖停一下再起来
-            return;
-         }
-         initSegment();
-         nowStepTime = drawStepTime + connerWaitTime;
-         return;
-      }
-      calcStepPointXY();
-      if(!moveTipTo(nowX, nowY, paperZ - penPress)) missCount++;
-      return;
-   }
-}
