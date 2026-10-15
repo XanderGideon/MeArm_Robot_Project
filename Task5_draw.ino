@@ -3,7 +3,7 @@
    ---------------------------------------------------------------------
     按键安排：
      短按 5 = 记一个示教点（最多 5 个）       长按 5 = 清空示教点
-     短按 6 = 开始画 / 正在画时再按一次 = 停  长按 6 = 换子任务
+     短按 6 = 开始画                         长按 6 = 换子任务
      短按 7 = 暂停 / 继续                    短按 8 = 取消（停住回待机）          
 
     坐标系设置：
@@ -59,7 +59,7 @@ float lineX1_inpaper = 0.0, lineY1_inpaper = -30.0;
 float lineX2_inpaper = 0.0, lineY2_inpaper = 30.0;
 
 //子任务二绘制N，定义N在纸面上的坐标
-int shapePoints[8] = {-20,-20,  10,-20,  -20,-30,  10,-30};
+int shapePoints[8] = {-17,-14, 7,-14, -24,-31, 6,-24};
 
 //绘图中无法到达的点位计数
 int missCount = 0;
@@ -172,7 +172,7 @@ void calcStepPointXY(){
       nowX = initSplineCurve(p0x, pathX[i], pathX[i + 1], p3x, t);
       nowY = initSplineCurve(p0y, pathY[i], pathY[i + 1], p3y, t);
    } 
-   else { //直线、图形、三角形：线性插值
+   else { //直线、图形、折线：线性插值
       nowX = segStartX + (segEndX - segStartX) * t;
       nowY = segStartY + (segEndY - segStartY) * t;
    }
@@ -181,6 +181,7 @@ void calcStepPointXY(){
 /*========================第3层：触发层=========================*/
 // 1. 回待机状态(next = 回完舵机以后去哪 0=保持待机 2=去画第一个点)
 void startGoHome(int next){
+   moveTipTo(tipX , tipY, paperZ + liftZ);
    drawState = 1;
    StartB = baseAngle;
    StartE = elAngle;
@@ -275,15 +276,24 @@ void tickDraw(){
    if(drawState == 2){
       segNowStep++;
       if(segNowStep > segTotalSteps){
-         moveTipTo(pathX[0], pathY[0], paperZ - penPress);
-         segIndex = 0;
-         initSegment();
-         drawState = 3;
-         nowStepTime = drawStepTime + connerWaitTime;
+         int k = segNowStep - segTotalSteps;
+         if(k == 1){
+            if(!moveTipTo(pathX[0], pathY[0], paperZ + liftZ * 0.35)) missCount++;
+         }
+         else if(k == 2){
+            if(!moveTipTo(pathX[0], pathY[0], paperZ + liftZ * 0.10)) missCount++;
+         }
+         else{
+            if(!moveTipTo(pathX[0], pathY[0], paperZ - penPress)) missCount++;
+            segIndex = 0;                             
+            initSegment();
+            drawState = 3;
+            nowStepTime = drawStepTime + connerWaitTime;   // 落笔停稳再开画
+         }
          return;
       }
       calcStepPointXY();
-      if(!moveTipTo(nowX, nowY, paperZ + liftZ)) missCount++;
+      if(!moveTipTo(nowX, nowY, paperZ + liftZ)) missCount++;//去第一个点的路上，期间一直是抬笔状态
       return;
    }
 
@@ -295,7 +305,7 @@ void tickDraw(){
             Serial.print(F("# drawing done  misscount = "));
             Serial.println(missCount);
             startGoHome(0);
-            nowStepTime = drawStepTime + connerWaitTime; //笔尖停一下再起来
+            nowStepTime = drawStepTime + connerWaitTime * 3; //笔尖停一下再起来
             return;
          }
          initSegment();

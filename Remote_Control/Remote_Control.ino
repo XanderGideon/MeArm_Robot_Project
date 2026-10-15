@@ -20,7 +20,7 @@
    ===================================================================== */
 
 const int keyCount = 8; 
-const int keyPin[keyCount] = {2 , 3 , 4 , 5 , 6 , 7 , 8 , 9};// 按键 1~8 接的引脚
+const int keyPin[keyCount] = {2 , 3 , 5 , 6 , A3 , A2 , A1 , A0};// 按键 1~8 接的引脚
 const unsigned int LongMs = 800;//超过这个时间算长按
 const unsigned int shortMs = 30;//低于这个时间算抖动
 
@@ -31,7 +31,7 @@ void setup(){
   Serial.begin(9600);
 
   for(int i = 0 ; i < keyCount ; i++){
-    pinMode(keyPin[i], INPUT_PULLUP);//输入模式，默认低电平，按下按键为高电平
+    pinMode(keyPin[i], INPUT);//输入模式，默认低电平，按下按键为高电平
     keyDown[i] = false;
   }
 }
@@ -43,7 +43,7 @@ void sendKey(int n, bool isLong){
 
 void loop(){
   for(int i = 0 ; i < keyCount ; i++){//监测所有按键
-    bool nowPress =(digitalRead(keyPin[i]) == LOW);//按下为高电平
+    bool nowPress =(digitalRead(keyPin[i]) == HIGH);//按下为高电平
 
     if(nowPress && !keyDown[i]){//按下按键,记录时间
       downTime[i] = millis();

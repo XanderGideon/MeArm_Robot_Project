@@ -12,7 +12,7 @@ const int gripperPin = 6;//夹爪
 int baseMin = 0,   baseMax = 180;//底座
 int shMin   = 70,  shMax   = 155;//大臂
 int elMin   = 35,   elMax   = 135;//小臂
-int grMin   = 80,  grMax   = 180;//爪子
+int grMin   = 80,  grMax   = 160;//爪子
 
 //肘部最多能折回來多少
 float foldMin = -120.0;
@@ -21,7 +21,7 @@ float foldMin = -120.0;
 float baseAngle = 90;
 float shAngle   = 90;
 float elAngle   = 90;
-float grAngle   = 145;//上电即可夹笔
+float grAngle   = 150;//上电即可夹笔
 
 //摇杆引脚
 const int joy1X = A0; // 底座
@@ -40,7 +40,7 @@ int speedLevel = 1;//初始设置为正常速度
 
 //==============回中姿态====================
 //全局都用这个来回中，不再单独写
-int homePose[3] = {90, 80, 95}; // 底座、大臂、小臂
+int homePose[3] = {90, 110, 85}; // 底座、大臂、小臂
 int homeGripperAngle = 80; //回中时爪子张开，方便衔接
 
 //串口接收缓冲区与标志位
@@ -65,7 +65,7 @@ const int recordInterval = 60;     //每60ms记一次，共 200*60ms = 12s > 10s
 /*1）"小臂"+笔相关*/
 float foreArm = 116.6; //实际测算得出轴转轴到爪缝中心距离为116.6mm
 float penDown = 70.0; //笔尖到爪缝的距离
-float penPress = 1.5; // 笔尖可在纸面上下压
+float penPress = 1.4; // 笔尖可在纸面上下压
 
 /* 2) 底座舵机的零度角与方向*/
 float baseZero = 90.0,  baseDir =  1.0;   // 底座：数学角从 +x 轴逆时针量

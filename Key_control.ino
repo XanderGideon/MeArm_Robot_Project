@@ -63,6 +63,7 @@ void doKeyTask(int n){
       delay(recordInterval);   // 必须按录制节拍复现，否则动作会变形
     }
     isAutoRunning = false;
+    clearSerial();
     Serial.println(F("play Stop"));
     return;
   }
