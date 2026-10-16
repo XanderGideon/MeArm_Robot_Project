@@ -19,8 +19,8 @@ float foldMin = -115.0;
 
 // 当前角度（唯一真值：所有控制方式都改这几个变量）
 float baseAngle = 90;
-float shAngle   = 75;
-float elAngle   = 90;
+float shAngle   = 80;
+float elAngle   = 95;
 float grAngle   = 155;//上电即可夹笔
 
 //摇杆引脚
@@ -169,10 +169,10 @@ void updateJoysticks(){
   
   // 每个轴：(摇杆值 - 512) / 100 => 死区外每 180 个模拟量变化约 1 度，
   // 由于舵机硬件存在客观问题，故而设置死区
-  if(v1x < 512 - joyDeadzone || v1x > 512 + joyDeadzone) {b += (512 - v1x)/180; moved = true;}
-  if(v1y < 512 - joyDeadzone || v1y > 512 + joyDeadzone) {s += (512 - v1y)/180; moved = true;}
-  if(v2x < 512 - joyDeadzone || v2x > 512 + joyDeadzone) {e += (512 - v2x)/180; moved = true;}
-  if(v2y < 512 - joyDeadzone || v2y > 512 + joyDeadzone) {g += (512 - v2y)/180; moved = true;}
+  if(v1x < 512 - joyDeadzone || v1x > 512 + joyDeadzone) {b += (512 - v1x)/140; moved = true;}
+  if(v1y < 512 - joyDeadzone || v1y > 512 + joyDeadzone) {s += (512 - v1y)/140; moved = true;}
+  if(v2x < 512 - joyDeadzone || v2x > 512 + joyDeadzone) {e += (512 - v2x)/140; moved = true;}
+  if(v2y < 512 - joyDeadzone || v2y > 512 + joyDeadzone) {g += (512 - v2y)/140; moved = true;}
 
   if(moved){
     setAngles(b, s, e, g);

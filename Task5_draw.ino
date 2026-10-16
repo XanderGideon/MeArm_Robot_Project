@@ -80,12 +80,12 @@ float nowY = 0; //在该段中绘制到某一步时的y坐标(相对基坐标系
 //5.回待机状态
 int afterHome = 0; //回完待机以后去哪个状态
 float StartB, StartS, StartE; //从这三个初始角度开始回待机
-float homeB = 90, homeS = 110, homeE = 85, homeG = 160; //标准待机角度
+float homeB = 90, homeS = 100, homeE = 90, homeG = 160; //标准待机角度
 int homeStep = 0, homeSteps = 40;
 
 //子任务一直线的首尾点坐标规定(相对于纸面坐标系)
 float lineX1_inpaper = -40.0, lineY1_inpaper = 0.0;
-float lineX2_inpaper = 0.0, lineY2_inpaper = 0.0;
+float lineX2_inpaper = 10.0, lineY2_inpaper = 0.0;
 
 //子任务二绘制N，定义N在纸面上的坐标
 int shapePoints[8] = {-14,-10, 10,-10, -19,-24, 9,-24};
@@ -296,13 +296,36 @@ void tickDraw(){
 /*========================第4层：触发层=========================*/
 // 1. 回待机状态(next = 回完舵机以后去哪 0=保持待机 2=去画第一个点)
 void startGoHome(int next){
-   if(tipValid && tipZ < paperZ + liftZ){
-      // 先只抬 1.5mm 离开纸面，停一下再抬到 12mm（原来是"一步蹦起来"）
-      if(moveTipTo(tipX, tipY, paperZ + 1.5)){
-         delay(150);
-         moveTipTo(tipX, tipY, paperZ + liftZ);
+   // 抬笔：分三级往上抬，每级都确认抬起来了；抬不到高度就不回中
+   if(tipZ < paperZ + liftZ && tipValid){
+      float lift[3] = {1.5, 6.0, liftZ};
+      for(int i = 0 ; i < 3 ; i++){
+         if(!moveTipTo(tipX, tipY, paperZ + lift[i])) break;  // 够不着就停在这级
+         delay(120);
       }
+   // 抬到高处外圈容易够不着，朝底座方向缩回一点再抬
+      if(tipZ < paperZ + liftZ - 0.2){
+         float r = sqrt(tipX * tipX + tipY * tipY);
+         if(r > 1.0){
+            float nx = tipX - 20.0 * tipX / r; 
+            float ny = tipY - 20.0 * tipY / r;
+            if(moveTipTo(nx, ny, tipZ)){        // 保持当前高度往内缩
+               delay(120);
+               moveTipTo(nx, ny, paperZ + liftZ);
+            }
+         }
+      }
+   //兜底的失败判断，真抬不起来就算了
+      if(tipZ < paperZ + liftZ - 0.3){
+         drawState = 0; 
+         isAutoRunning = false; 
+         paused = false;
+         Serial.println(F("# 抬笔失败，笔可能还贴在纸上，先不回中"));
+         return;        // 停原地
+      }
+      Serial.println(F("# 抬笔 OK"));
    }
+
    drawState = 1;
    StartB = baseAngle;
    StartE = elAngle;
