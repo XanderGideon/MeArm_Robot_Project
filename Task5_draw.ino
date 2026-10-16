@@ -84,8 +84,8 @@ float homeB = 90, homeS = 100, homeE = 90, homeG = 160; //标准待机角度
 int homeStep = 0, homeSteps = 40;
 
 //子任务一直线的首尾点坐标规定(相对于纸面坐标系)
-float lineX1_inpaper = -40.0, lineY1_inpaper = 0.0;
-float lineX2_inpaper = 10.0, lineY2_inpaper = 0.0;
+float lineX1_inpaper = -25.0, lineY1_inpaper = 0.0;
+float lineX2_inpaper = 25.0, lineY2_inpaper = 0.0;
 
 //子任务二绘制N，定义N在纸面上的坐标
 int shapePoints[8] = {-14,-10, 10,-10, -19,-24, 9,-24};

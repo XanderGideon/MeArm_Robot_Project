@@ -20,7 +20,7 @@
    ===================================================================== */
 
 const int keyCount = 8; 
-const int keyPin[keyCount] = {2 , 3 , 4 , 5 , 8, 9 , A0,A1};// 按键 1~8 接的引脚
+const int keyPin[keyCount] = {2 , 3 , 5 , 6 , A3, A2 , A1 ,A0 };// 按键 1~8 接的引脚
 const unsigned int LongMs = 800;//超过这个时间算长按
 const unsigned int shortMs = 30;//低于这个时间算抖动
 
