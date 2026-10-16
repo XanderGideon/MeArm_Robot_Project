@@ -21,7 +21,7 @@ float foldMin = -115.0;
 float baseAngle = 90;
 float shAngle   = 75;
 float elAngle   = 90;
-float grAngle   = 150;//上电即可夹笔
+float grAngle   = 155;//上电即可夹笔
 
 //摇杆引脚
 const int joy1X = A0; // 底座
@@ -65,7 +65,7 @@ const int recordInterval = 80;     //每80ms记一次，共 150*80ms = 12s > 10s
 /*1）"小臂"+笔相关*/
 float foreArm = 116.6; //实际测算得出轴转轴到爪缝中心距离为116.6mm
 float penDown = 70.0; //笔尖到爪缝的距离
-float penPress = 1.4; // 笔尖可在纸面上下压
+float penPress = 1.5; // 笔尖可在纸面上下压
 
 /* 2) 底座舵机的零度角与方向*/
 float baseZero = 90.0,  baseDir =  1.0;   // 底座：数学角从 +x 轴逆时针量
@@ -73,8 +73,8 @@ float baseZero = 90.0,  baseDir =  1.0;   // 底座：数学角从 +x 轴逆时�
 /* 3) 大臂舵机角度+轴转轴相关查表 */
 #define elbowJointPoints 10
 float shoulderServoAngles[elbowJointPoints]= {70, 75,80,85,90, 95,110,125,140,155};
-float elbowJointR[elbowJointPoints] = {17.9,22.3, 26.6, 30.9, 35.3, 39.6,  52.6,  72.6,  90.6,  95.6};
-float elbowJointH[elbowJointPoints] = {126.4 ,124.1, 121.8, 119.5, 117.1, 114.8, 107.8,  95.8,  75.8,  59.8};
+float elbowJointR[elbowJointPoints] = {15.3,20.1, 25.0, 29.8, 34.6, 39.6,  52.6,  72.6,  90.6,  95.6};
+float elbowJointH[elbowJointPoints] = {116.1 ,116.2, 116.1, 115.6, 114.9, 114.8, 107.8,  95.8,  75.8,  59.8};
 
 /* 4) 等效大臂长+拟合肩关节位置*/
 float shoulderJointR = 20.1;
@@ -111,7 +111,7 @@ float ikBase, ikSh, ikEl;
 
 //=======================任务五绘图状态相关变量========================
 #define  MAX_POINTS 5  //最多5个示教点
-int taskType = 2; // 0=直线， 1=图形， 2=折线， 3=曲线
+int taskType = 0; // 0=直线， 1=图形， 2=折线， 3=曲线
 int drawState = 0; //当前任务进行状态 0=正在待机 1=回到待机状态 2=抬笔去第一个点 3=落笔开始画
 bool paused = false;
 int nowStepTime = 80;
@@ -167,12 +167,12 @@ void updateJoysticks(){
   bool moved = false;
   float b = baseAngle, s = shAngle, e = elAngle, g = grAngle;
   
-  // 每个轴：(摇杆值 - 512) / 100 => 死区外每 100 个模拟量变化约 1 度，
+  // 每个轴：(摇杆值 - 512) / 100 => 死区外每 180 个模拟量变化约 1 度，
   // 由于舵机硬件存在客观问题，故而设置死区
-  if(v1x < 512 - joyDeadzone || v1x > 512 + joyDeadzone) {b += (512 - v1x)/100; moved = true;}
-  if(v1y < 512 - joyDeadzone || v1y > 512 + joyDeadzone) {s += (512 - v1y)/100; moved = true;}
-  if(v2x < 512 - joyDeadzone || v2x > 512 + joyDeadzone) {e += (512 - v2x)/100; moved = true;}
-  if(v2y < 512 - joyDeadzone || v2y > 512 + joyDeadzone) {g += (512 - v2y)/100; moved = true;}
+  if(v1x < 512 - joyDeadzone || v1x > 512 + joyDeadzone) {b += (512 - v1x)/180; moved = true;}
+  if(v1y < 512 - joyDeadzone || v1y > 512 + joyDeadzone) {s += (512 - v1y)/180; moved = true;}
+  if(v2x < 512 - joyDeadzone || v2x > 512 + joyDeadzone) {e += (512 - v2x)/180; moved = true;}
+  if(v2y < 512 - joyDeadzone || v2y > 512 + joyDeadzone) {g += (512 - v2y)/180; moved = true;}
 
   if(moved){
     setAngles(b, s, e, g);

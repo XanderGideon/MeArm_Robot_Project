@@ -103,20 +103,8 @@ float upperArmServoToAbsAngle(float ShAngle){
 /*1)  正运动学：根据三个舵机当前角度，算出笔尖坐标 (tipX, tipY, tipZ)
       用的是几何拼接*/
 bool tipValid = false;         // tip 坐标是否可信
-bool lastOutOfTable = false;   // 上一次是不是就在表外（用来只提示一次，防止刷屏）
+
 void calcTipPosition(){
-  // ---- 表外：不更新坐标，只提示一次 ----
-  if(shAngle < shoulderServoAngles[0] || shAngle > shoulderServoAngles[elbowJointPoints - 1]){
-    tipValid = false;
-    if(!lastOutOfTable){
-      Serial.print(F("# 大臂角 "));
-      Serial.print(shAngle, 1);
-      Serial.println(F("° 在标定表(95~155°)外，tip 坐标不可信"));
-      lastOutOfTable = true;
-    }
-    return;        
-  }
-  lastOutOfTable = false;
 
   // 1. 底座舵机角 → 数学方位角
   float t = (baseAngle - baseZero) * baseDir * PI / 180.0 ;
@@ -149,7 +137,7 @@ bool solveIK(float x, float y, float z){
 
   //2.在大臂舵机限幅中找粗略的结果（精度为1度）
   float bestShServo = shMin, bestError = 999;
-  for(int i = 0 ; i < (shMax - shMin) ; i++){
+  for(int i = 0 ; i <= (shMax - shMin) ; i++){
     float err = fabs(elbowDistanceTo((float)(shMin+i), r, gh) - foreArm);//不断算残差，并取绝对值
     if(err < bestError) {bestShServo = (float)(shMin+i); bestError = err;}//利用绝对值判断残差之间的关系，找该精度下残差最小的大臂角
   }

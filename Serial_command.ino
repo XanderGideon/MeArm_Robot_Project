@@ -40,7 +40,7 @@ void printHelp() {
   Serial.println(F("长按:5=清空示教点     6=换任务类型"));
   Serial.println(F("     7=画图形                     "));
   Serial.println(F("串口:O=张开 S=闭合 H/L=任务一摇杆提速/降速"));
-  Serial.println(F("      M=打印操作指南"));
+  Serial.println(F("      M=打印操作指南  P=打印四路舵机角度"));
   Serial.println(F("      x90,y60,z30  -> 三个舵机一起动(只认这一个格式)"));
   Serial.println(F("      A / B / C    -> 夹取物体 A / B / C"));
   Serial.println(F("      1~8 / L1~L8  -> 遥控板短按 / 长按"));
@@ -114,10 +114,10 @@ void HandleSerial() {
         break;
 
       case 'P':
-        Serial.println((base.read()));
-        Serial.println((shoulder.read()));
-        Serial.println((elbow.read()));
-        Serial.println((gripper.read()));
+        Serial.print(F("base")); Serial.println((base.read()));
+        Serial.print(F("shoulder")); Serial.println((shoulder.read()));
+        Serial.print(F("elbow")); Serial.println((elbow.read()));
+        Serial.print(F("gripper")); Serial.println((gripper.read()));
         Serial.println("-----------------");
         break;
         

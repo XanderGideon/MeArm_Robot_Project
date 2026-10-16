@@ -80,15 +80,15 @@ float nowY = 0; //在该段中绘制到某一步时的y坐标(相对基坐标系
 //5.回待机状态
 int afterHome = 0; //回完待机以后去哪个状态
 float StartB, StartS, StartE; //从这三个初始角度开始回待机
-float homeB = 90, homeS = 110, homeE = 85, homeG = 155; //标准待机角度
+float homeB = 90, homeS = 110, homeE = 85, homeG = 160; //标准待机角度
 int homeStep = 0, homeSteps = 40;
 
 //子任务一直线的首尾点坐标规定(相对于纸面坐标系)
-float lineX1_inpaper = 0.0, lineY1_inpaper = -30.0;
-float lineX2_inpaper = 0.0, lineY2_inpaper = 30.0;
+float lineX1_inpaper = -40.0, lineY1_inpaper = 0.0;
+float lineX2_inpaper = 0.0, lineY2_inpaper = 0.0;
 
 //子任务二绘制N，定义N在纸面上的坐标
-int shapePoints[8] = {-17,-14, 7,-14, -24,-31, 6,-24};
+int shapePoints[8] = {-14,-10, 10,-10, -19,-24, 9,-24};
 
 //绘图中无法到达的点位计数
 int missCount = 0;
@@ -296,7 +296,7 @@ void tickDraw(){
 /*========================第4层：触发层=========================*/
 // 1. 回待机状态(next = 回完舵机以后去哪 0=保持待机 2=去画第一个点)
 void startGoHome(int next){
-   if(tipValid){
+   if(tipValid && tipZ < paperZ + liftZ){
       // 先只抬 1.5mm 离开纸面，停一下再抬到 12mm（原来是"一步蹦起来"）
       if(moveTipTo(tipX, tipY, paperZ + 1.5)){
          delay(150);
